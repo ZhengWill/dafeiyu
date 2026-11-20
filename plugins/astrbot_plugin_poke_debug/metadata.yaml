@@ -1,0 +1,5 @@
+name: astrbot_plugin_poke_debug
+desc: 调试用 —— 把所有入站事件的结构打到日志
+version: 5.0.0
+author: dafeiyu
+repo: ""

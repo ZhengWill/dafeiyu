@@ -1,0 +1,5 @@
+name: astrbot_plugin_auto_accept
+desc: 自动通过好友申请与群邀请，通过后发欢迎语
+version: 1.0.0
+author: dafeiyu
+repo: ""

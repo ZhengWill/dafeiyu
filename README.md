@@ -330,7 +330,7 @@ SnowLuma / NapCat 这类项目走的是**协议模拟**，不是官方 API。腾
 | 仓库 | https://github.com/anka-afk/astrbot_plugin_meme_manager |
 | 协议 | **MIT** |
 
-`docs/避坑.md` 中第 11~13 条（页面 token 绑定、嵌入维度、并发僵尸任务）
+`docs/避坑.md` 中第 13~15 条（页面 token 绑定、嵌入维度、并发僵尸任务）
 是在调试该插件时踩出来的，经验描述与它直接相关。本项目不分发其代码。
 
 ### SnowLuma / NapCat —— QQ 协议端

@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>大肥鱼中转站</title>
+<style>
+:root{
+  --bg:#0b1120; --bg2:#111a2e; --card:#151f36; --card2:#1a2742;
+  --line:#243354; --line2:#2f4269;
+  --tx:#e6edf7; --tx2:#8fa3c4; --tx3:#5f7194;
+  --ok:#35d07f; --warn:#f5b942; --err:#f2565c; --acc:#4c8dff; --acc2:#7c5cff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(1200px 600px at 15% -10%,#16233f 0%,transparent 60%),var(--bg);
+  color:var(--tx);min-height:100vh;font-size:14px;line-height:1.5;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:22px 20px 70px}
+
+/* header */
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.back{
+  display:inline-flex;align-items:center;gap:5px;text-decoration:none;
+  color:var(--tx2);font-size:13px;font-weight:550;padding:6px 12px;
+  border:1px solid var(--line2);border-radius:8px;background:var(--card);
+  transition:.15s;white-space:nowrap;
+}
+.back:hover{color:var(--tx);border-color:var(--acc);background:#1a2742}
+h1{font-size:20px;font-weight:650;letter-spacing:.3px;display:flex;align-items:center;gap:9px}
+h1 .fish{font-size:22px;filter:drop-shadow(0 0 8px #4c8dff88)}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:99px;
+  font-size:12px;font-weight:600;border:1px solid;
+}
+.pill.on{color:var(--ok);border-color:#1d5c3e;background:#0e2a1e}
+.pill.off{color:var(--err);border-color:#5c2226;background:#2a1014}
+.pill.warn{color:var(--warn);border-color:#5c4a1d;background:#2a2210}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.spacer{flex:1}
+.baseurl{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:var(--tx2);
+  background:var(--card);border:1px solid var(--line);padding:6px 11px;border-radius:8px;
+  cursor:pointer;transition:.15s;
+}
+.baseurl:hover{border-color:var(--acc);color:var(--tx)}
+
+/* tabs */
+nav{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:0}
+nav button{
+  background:none;border:none;color:var(--tx2);font:inherit;font-size:13.5px;font-weight:550;
+  padding:10px 15px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:.15s;border-radius:6px 6px 0 0;
+}
+nav button:hover{color:var(--tx);background:#ffffff07}
+nav button.active{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px}
+.card h2{font-size:14px;font-weight:650;margin-bottom:13px;display:flex;align-items:center;gap:8px;color:var(--tx)}
+.card h2 .sub{font-size:11.5px;color:var(--tx3);font-weight:400}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(155px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.stat{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .k{font-size:11.5px;color:var(--tx3);margin-bottom:5px}
+.stat .v{font-size:20px;font-weight:680;letter-spacing:-.3px}
+.stat .v small{font-size:12px;color:var(--tx3);font-weight:400;margin-left:3px}
+
+/* buttons */
+button.btn{
+  background:var(--acc);color:#fff;border:none;border-radius:8px;padding:7px 14px;
+  font:inherit;font-size:13px;font-weight:580;cursor:pointer;transition:.15s;
+}
+button.btn:hover{filter:brightness(1.12)}
+button.btn:active{transform:translateY(1px)}
+button.btn:disabled{opacity:.42;cursor:not-allowed;filter:none}
+button.btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--tx2)}
+button.btn.ghost:hover{border-color:var(--acc);color:var(--tx)}
+button.btn.danger{background:transparent;border:1px solid #5c2226;color:var(--err)}
+button.btn.danger:hover{background:#2a1014}
+button.btn.sm{padding:4px 10px;font-size:12px;border-radius:6px}
+button.btn.ok{background:#1a7f4b}
+
+/* inputs */
+input,select,textarea{
+  background:var(--bg2);border:1px solid var(--line2);color:var(--tx);
+  border-radius:7px;padding:7px 10px;font:inherit;font-size:13px;width:100%;
+  transition:.15s;outline:none;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 3px #4c8dff22}
+input::placeholder{color:var(--tx3)}
+label.f{display:block;margin-bottom:11px}
+label.f span{display:block;font-size:12px;color:var(--tx2);margin-bottom:5px}
+
+/* table */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  text-align:left;font-size:11.5px;font-weight:600;color:var(--tx3);
+  padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap;
+}
+td{padding:8px 9px;border-bottom:1px solid #1c2842;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:#ffffff04}
+
+/* chain */
+.chain-item{
+  display:flex;align-items:center;gap:12px;background:var(--card2);
+  border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin-bottom:8px;
+  cursor:grab;transition:.15s;
+}
+.chain-item:hover{border-color:var(--line2);background:#1e2c4a}
+.chain-item.dragging{opacity:.38;cursor:grabbing}
+.chain-item.drag-over{border-color:var(--acc);border-style:dashed}
+.chain-item.down{border-color:#5c2226;background:#1f1218}
+.chain-idx{
+  width:26px;height:26px;border-radius:7px;background:#243354;color:var(--tx2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:680;flex-shrink:0;
+}
+.chain-body{flex:1;min-width:0}
+.chain-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chain-prov{font-weight:600;font-size:13.5px}
+.chain-model{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--acc);
+  background:#4c8dff18;padding:2px 7px;border-radius:5px;
+}
+.chain-meta{font-size:11.5px;color:var(--tx3);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
+.chain-meta b{color:var(--tx2);font-weight:550}
+.grip{color:var(--tx3);font-size:15px;letter-spacing:-2px;cursor:grab;user-select:none;flex-shrink:0}
+
+/* tag */
+.tag{
+  display:inline-block;font-size:11px;padding:1.5px 7px;border-radius:5px;
+  background:#243354;color:var(--tx2);font-weight:550;white-space:nowrap;
+}
+.tag.ok{background:#0e2a1e;color:var(--ok)}
+.tag.err{background:#2a1014;color:var(--err)}
+.tag.warn{background:#2a2210;color:var(--warn)}
+.tag.acc{background:#4c8dff20;color:var(--acc)}
+
+/* switch */
+.sw{position:relative;display:inline-block;width:38px;height:21px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw i{
+  position:absolute;inset:0;background:#2a3a5c;border-radius:99px;transition:.2s;cursor:pointer;
+}
+.sw i::before{
+  content:"";position:absolute;width:15px;height:15px;left:3px;top:3px;
+  background:#7f92b3;border-radius:50%;transition:.2s;
+}
+.sw input:checked + i{background:#1a5c8f}
+.sw input:checked + i::before{transform:translateX(17px);background:var(--acc)}
+
+.muted{color:var(--tx3);font-size:12px}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.mt{margin-top:12px}
+.hide{display:none!important}
+
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1e2c4a;border:1px solid var(--line2);color:var(--tx);padding:10px 20px;
+  border-radius:9px;font-size:13px;font-weight:550;opacity:0;pointer-events:none;
+  transition:.25s;z-index:999;box-shadow:0 8px 30px #0009;max-width:80vw;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{border-color:#5c2226;background:#2a1014;color:#ffb3b6}
+#toast.ok{border-color:#1d5c3e;background:#0e2a1e;color:#8ef0bc}
+
+.modal-bg{
+  position:fixed;inset:0;background:#000a;backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;z-index:900;padding:20px;
+}
+.modal{
+  background:var(--card);border:1px solid var(--line2);border-radius:14px;
+  padding:22px;width:100%;max-width:480px;box-shadow:0 20px 60px #000b;
+}
+.modal h3{font-size:15px;margin-bottom:16px}
+.cp{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;
+  background:var(--bg2);border:1px solid var(--line2);border-radius:8px;
+  padding:11px 13px;word-break:break-all;line-height:1.7;
+}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid #ffffff33;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="back" id="backLink" href="/" title="返回大肥鱼控制台">← 控制台</a>
+  <h1><span class="fish">🐟</span>大肥鱼中转站</h1>
+  <span class="pill on" id="hStat"><span class="dot"></span>运行中</span>
+  <div class="spacer"></div>
+  <div class="baseurl" id="baseUrl" title="点击复制">—</div>
+</header>
+
+<nav>
+  <button data-tab="overview" class="active">概览</button>
+  <button data-tab="chain">降级链</button>
+  <button data-tab="providers">供应商</button>
+  <button data-tab="models">模型</button>
+  <button data-tab="accounts">账号</button>
+  <button data-tab="connect">接入</button>
+</nav>
+
+<!-- ============ 概览 ============ -->
+<section id="tab-overview">
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="stat"><div class="k">对外模型名</div><div class="v mono" id="s-expose" style="font-size:16px">—</div></div>
+    <div class="stat"><div class="k">降级链</div><div class="v" id="s-chain">—<small>条</small></div></div>
+    <div class="stat"><div class="k">供应商</div><div class="v" id="s-prov">—<small>家</small></div></div>
+    <div class="stat"><div class="k">今日调用</div><div class="v" id="s-calls">—<small>次</small></div></div>
+    <div class="stat"><div class="k">今日 Token</div><div class="v" id="s-tok" style="font-size:16px">—</div></div>
+    <div class="stat"><div class="k">失败</div><div class="v" id="s-err">—<small>次</small></div></div>
+  </div>
+
+  <div class="card">
+    <h2>当前生效顺序 <span class="sub" id="ov-live-sub"></span></h2>
+    <div id="ov-chain"></div>
+  </div>
+
+  <div class="card">
+    <h2>最近 7 天 <span class="sub">按天汇总</span></h2>
+    <div style="overflow-x:auto"><table id="t-usage">
+      <thead><tr><th>日期</th><th>调用</th><th>失败</th><th>输入 Token</th><th>输出 Token</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ 降级链 ============ -->
+<section id="tab-chain" class="hide">
+  <div class="card">
+    <h2>降级顺序 <span class="sub">从上到下；上面挂了自动往下掉，恢复后自动回升。拖动可改顺序。</span></h2>
+    <div id="chainList"></div>
+    <div class="row mt">
+      <select id="addChainSel" style="max-width:420px"></select>
+      <button class="btn" onclick="addChain()">＋ 加入链尾</button>
+      <button class="btn ghost" onclick="resetHealth()">清空健康状态（解除冷却）</button>
+    </div>
+    <p class="muted mt">冷却到期后才会重试；判断依据是上游真实返回（额度不足 / 限流 / 密钥失效 / 网络错误）。</p>
+  </div>
+</section>
+
+<!-- ============ 供应商 ============ -->
+<section id="tab-providers" class="hide">
+  <div class="card">
+    <h2>供应商 <span class="sub">密钥单独管理，与模型分开</span></h2>
+    <div id="provList"></div>
+    <div class="row mt">
+      <button class="btn" onclick="openProvModal()">＋ 添加供应商</button>
+      <button class="btn ghost" onclick="loadAll()">刷新</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 模型 ============ -->
+<section id="tab-models" class="hide">
+  <div class="card">
+    <h2>模型总览 <span class="sub">每个供应商可启用多个模型；勾选的会进降级链候选</span></h2>
+    <div class="row" style="margin-bottom:14px">
+      <button class="btn ghost sm" onclick="fillContext()">按模型名补全上下文长度</button>
+      <span class="muted">多数中转站不返回上下文长度，这里按模型名给默认值，可再手动改。</span>
+    </div>
+    <div id="modelPanels"></div>
+  </div>
+</section>
+
+<!-- ============ 账号 ============ -->
+<section id="tab-accounts" class="hide">
+  <div class="card">
+    <h2>WorkBuddy 自动签到</h2>
+    <div class="row">
+      <label class="sw"><input type="checkbox" id="ckToggle" onchange="toggleCheckin(this.checked)"><i></i></label>
+      <span id="ckText" class="muted">读取中…</span>
+    </div>
+    <div class="row mt">
+      <button class="btn ghost sm" onclick="runCheckin()">立即签到一次</button>
+      <span class="muted" id="ckNext"></span>
+    </div>
+    <pre class="cp mt" id="ckLog" style="max-height:230px;overflow:auto;font-size:11.5px;white-space:pre-wrap">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>账号池 <span class="sub">来自 WorkBuddy 代理</span></h2>
+    <div id="acctList"></div>
+  </div>
+
+  <div class="card">
+    <h2>各供应商额度 <span class="sub">new-api 系只有「已用金额」；WorkBuddy 有剩余积分</span></h2>
+    <div id="provQuota"></div>
+    <div class="row mt"><button class="btn ghost sm" onclick="loadAllQuota()">刷新全部</button></div>
+  </div>
+</section>
+
+<!-- ============ 接入 ============ -->
+<section id="tab-connect" class="hide">
+  <div class="card">
+    <h2>接进 AstrBot（只填一次）</h2>
+    <table>
+      <tbody>
+        <tr><th style="width:120px">API Base</th><td class="mono" id="c-base">—</td></tr>
+        <tr><th>API Key</th><td class="mono" id="c-key">—</td></tr>
+        <tr><th>模型名</th><td class="mono" id="c-model">—</td></tr>
+      </tbody>
+    </table>
+    <p class="muted mt">把这三项填进 AstrBot 的「服务提供商 → OpenAI 兼容」，之后换供应商、改顺序都在这里操作，AstrBot 不用再动。</p>
+  </div>
+
+  <div class="card">
+    <h2>对外长这样</h2>
+    <pre class="cp" id="c-curl">—</pre>
+  </div>
+
+  <div class="card">
+    <h2>看图模型 <span class="sub">收到带图片的消息时用这个模型，不走降级链</span></h2>
+    <div class="row">
+      <label class="sw"><input type="checkbox" id="visEnable" onchange="saveVision()"><i></i></label>
+      <select id="visProv" onchange="onVisProvChange()" style="max-width:230px"></select>
+      <select id="visModel" onchange="onVisModelChange()" style="max-width:300px"></select>
+      <button class="btn ghost sm" onclick="testVision()">测试这张图能不能看</button>
+    </div>
+    <p class="muted mt" id="visHint">只有部分模型支持图片。勾上「看图模型」后，凡是消息里带图就走这里指定的那一条。</p>
+  </div>
+
+  <div class="card">
+    <h2>全局设置</h2>
+    <div class="grid g3">
+      <label class="f"><span>对外模型名</span><input id="setExpose"></label>
+      <label class="f"><span>API Key</span><input id="setKey"></label>
+      <label class="f"><span>失败冷却（秒）</span><input id="setCool" type="number"></label>
+    </div>
+    <button class="btn" onclick="saveSettings()">保存设置</button>
+  </div>
+</section>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const BASE = (() => {
+  if (window.__RELAY_BASE__ !== undefined) return window.__RELAY_BASE__;
+  // 被大肥鱼控制台挂在 /relay/ 下时，所有请求都要带这个前缀
+  const m = location.pathname.match(/^(.*?\/relay)(?:\/|$)/);
+  return m ? m[1] : '';
+})();
+const API = BASE + '/api';
+const RELAY_KEY = window.__RELAY_KEY__ || '';
+let S = null;
+
+/* ---------- helpers ---------- */
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function toast(msg, kind = '') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'show ' + kind;
+  clearTimeout(t._tm);
+  t._tm = setTimeout(() => { t.className = ''; }, 2600);
+}
+
+async function api(path, body) {
+  const headers = { 'X-Relay-Admin': RELAY_KEY };
+  const opt = body === undefined
+    ? { method: 'GET', headers }
+    : { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) };
+  const r = await fetch(API + path, opt);
+  const txt = await r.text();
+  let j;
+  try { j = JSON.parse(txt); } catch { throw new Error(txt.slice(0, 200)); }
+  if (!r.ok && j.error) throw new Error(typeof j.error === 'string' ? j.error : JSON.stringify(j.error));
+  return j;
+}
+
+function copyText(t) {
+  navigator.clipboard.writeText(t).then(
+    () => toast('已复制', 'ok'),
+    () => toast('复制失败，请手动选中', 'err')
+  );
+}
+
+/* ---------- tabs ---------- */
+function showTab(name) {
+  document.querySelectorAll('nav button').forEach((x) => x.classList.toggle('active', x.dataset.tab === name));
+  document.querySelectorAll('section').forEach((s) => s.classList.add('hide'));
+  const sec = $('tab-' + name);
+  if (sec) sec.classList.remove('hide');
+  if (location.hash !== '#' + name) history.replaceState(null, '', '#' + name);
+}
+document.querySelectorAll('nav button').forEach((b) => {
+  b.onclick = () => showTab(b.dataset.tab);
+});
+window.addEventListener('hashchange', () => {
+  const n = location.hash.slice(1);
+  if (n) showTab(n);
+});
+
+/* ---------- load ---------- */
+async function loadAll() {
+  try {
+    S = await api('/state');
+    render();
+  } catch (e) {
+    toast('加载失败: ' + e.message, 'err');
+    $('hStat').className = 'pill off';
+    $('hStat').innerHTML = '<span class="dot"></span>连接失败';
+  }
+}
+
+function render() {
+  const cfg = S;
+  const chainN = (cfg.chain || []).filter((c) => c.enabled !== false).length;
+  const provN = (cfg.providers || []).filter((p) => p.enabled !== false).length;
+
+  $('hStat').className = 'pill on';
+  $('hStat').innerHTML = '<span class="dot"></span>运行中';
+
+  const base = location.origin + BASE + '/v1';
+  $('baseUrl').textContent = base;
+  $('baseUrl').onclick = () => { navigator.clipboard.writeText(base); toast('已复制 ' + base, 'ok'); };
+
+  $('s-expose').textContent = cfg.exposeModel || '—';
+  $('s-chain').innerHTML = chainN + '<small>条</small>';
+  $('s-prov').innerHTML = provN + '<small>家</small>';
+
+  const days = cfg.usage?.days || {};
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+  const d = days[today] || { calls: 0, errors: 0, promptTokens: 0, completionTokens: 0 };
+  $('s-calls').innerHTML = d.calls + '<small>次</small>';
+  $('s-tok').textContent = fmtK(d.promptTokens + d.completionTokens);
+  $('s-err').innerHTML = d.errors + '<small>次</small>';
+
+  renderOverviewChain();
+  renderChain();
+  renderProviders();
+  renderModels();
+  renderUsage(days);
+  renderConnect();
+  renderVision();
+
+  loadAccounts();
+  loadCheckin();
+}
+
+function fmtK(n) {
+  n = Number(n) || 0;
+  if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'k';
+  return String(n);
+}
+function provOf(id) { return (S.providers || []).find((p) => p.id === id); }
+function healthOf(key) { return (S.health || []).find((h) => h.key === key) || {}; }
+
+/* ---------- overview chain ---------- */
+function renderOverviewChain() {
+  const live = (S.chain || []).filter((c) => c.enabled !== false);
+  $('ov-live-sub').textContent = live.length ? '' : '（空 — 去「降级链」加一条）';
+  $('ov-chain').innerHTML = live.map((c, i) => {
+    const p = provOf(c.providerId);
+    const h = healthOf(`${c.providerId}/${c.modelId}`);
+    const down = h.downUntil && h.downUntil > Date.now();
+    const st = down ? '<span class="tag err">冷却中</span>'
+      : h.ok === false ? '<span class="tag warn">曾有错误</span>'
+      : '<span class="tag ok">可用</span>';
+    return `<div class="chain-item ${down ? 'down' : ''}" style="cursor:default">
+      <div class="chain-idx">${i + 1}</div>
+      <div class="chain-body">
+        <div class="chain-top">
+          <span class="chain-prov">${esc(p?.label || c.providerId)}</span>
+          <span class="chain-model">${esc(c.modelId)}</span>${st}
+        </div>
+        <div class="chain-meta">
+          <span>协议 <b>${p?.api || '?'}</b></span>
+          <span>上下文 <b>${fmtK((p?.models || []).find((m) => m.id === c.modelId)?.contextWindow || 0)}</b></span>
+          ${h.lastError ? `<span style="color:var(--err)">${esc(String(h.lastError).slice(0, 90))}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="muted">还没有任何条目。</p>';
+}
+
+/* ---------- chain editor ---------- */
+function renderChain() {
+  const chain = S.chain || [];
+  const box = $('chainList');
+  box.innerHTML = chain.map((c, i) => {
+    const p = provOf(c.providerId);
+    const h = healthOf(`${c.providerId}/${c.modelId}`);
+    const down = h.downUntil && h.downUntil > Date.now();
+    const model = (p?.models || []).find((m) => m.id === c.modelId) || {};
+    return `<div class="chain-item ${down ? 'down' : ''}" draggable="true" data-i="${i}">
+      <span class="grip">⠿</span>
+      <div class="chain-idx">${i + 1}</div>
+      <div class="chain-body">
+        <div class="chain-top">
+          <span class="chain-prov">${esc(p?.label || c.providerId)}</span>
+          <span class="chain-model">${esc(c.modelId)}</span>
+          ${down ? '<span class="tag err">冷却中</span>' : ''}
+          ${c.enabled === false ? '<span class="tag warn">已停用</span>' : ''}
+        </div>
+        <div class="chain-meta">
+          <span>${p?.api || '?'}</span>
+          <span>上下文 <b>${fmtK(model.contextWindow)}</b></span>
+          <span>max_tokens <b>${model.maxTokens || 4096}</b></span>
+        </div>
+      </div>
+      <button class="btn ghost sm" onclick="toggleChainEntry(${i})">${c.enabled === false ? '启用' : '停用'}</button>
+      <button class="btn danger sm" onclick="removeChainEntry(${i})">删除</button>
+    </div>`;
+  }).join('') || '<p class="muted">链是空的。用下面下拉框加一条。</p>';
+
+  // 拖拽
+  let dragI = null;
+  box.querySelectorAll('.chain-item').forEach((el) => {
+    el.addEventListener('dragstart', () => { dragI = +el.dataset.i; el.classList.add('dragging'); });
+    el.addEventListener('dragend', () => { el.classList.remove('dragging'); box.querySelectorAll('.chain-item').forEach(x => x.classList.remove('drag-over')); });
+    el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      const to = +el.dataset.i;
+      if (dragI === null || dragI === to) return;
+      const arr = [...S.chain];
+      const [m] = arr.splice(dragI, 1);
+      arr.splice(to, 0, m);
+      S.chain = arr;
+      await saveChain();
+    });
+  });
+
+  // 下拉：所有「已启用模型」里还没进链的
+  const inChain = new Set(chain.map((c) => `${c.providerId}/${c.modelId}`));
+  const opts = [];
+  for (const p of S.providers || []) {
+    for (const m of p.models || []) {
+      if (m.enabled === false) continue;
+      const k = `${p.id}/${m.id}`;
+      if (inChain.has(k)) continue;
+      opts.push(`<option value="${esc(k)}">${esc(p.label)} · ${esc(m.id)}</option>`);
+    }
+  }
+  $('addChainSel').innerHTML = opts.length ? opts.join('') : '<option value="">（没有可加的模型 — 先去「模型」页启用）</option>';
+}
+
+async function saveChain() {
+  try {
+    await api('/chain/set', { chain: S.chain });
+    toast('顺序已保存', 'ok');
+    await loadAll();
+  } catch (e) { toast('保存失败: ' + e.message, 'err'); }
+}
+
+async function addChain() {
+  const v = $('addChainSel').value;
+  if (!v) return toast('没有可加的模型', 'err');
+  const [providerId, ...rest] = v.split('/');
+  const modelId = rest.join('/');
+  try {
+    await api('/chain/add', { providerId, modelId });
+    toast('已加入链尾', 'ok');
+    await loadAll();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function toggleChainEntry(i) {
+  S.chain[i].enabled = S.chain[i].enabled === false;
+  await saveChain();
+}
+async function removeChainEntry(i) {
+  S.chain.splice(i, 1);
+  await saveChain();
+}
+async function resetHealth() {
+  try { await api('/health/reset', {}); toast('健康状态已清空', 'ok'); await loadAll(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+/* ---------- providers ---------- */
+function renderProviders() {
+  const list = S.providers || [];
+  $('provList').innerHTML = list.map((p) => {
+    const on = p.enabled !== false;
+    const enabledModels = (p.models || []).filter((m) => m.enabled !== false).length;
+    return `<div class="chain-item" style="cursor:default">
+      <div style="flex:1;min-width:0">
+        <div class="chain-top">
+          <span class="chain-prov">${esc(p.label)}</span>
+          <span class="tag">${esc(p.api)}</span>
+          <span class="tag ${on ? 'ok' : 'err'}">${on ? '启用' : '停用'}</span>
+          <span class="tag acc">${enabledModels}/${(p.models || []).length} 模型</span>
+        </div>
+        <div class="chain-meta">
+          <span class="mono">${esc(p.base)}</span>
+          <span>密钥 <b class="mono">${esc(p.keyMasked || '（无）')}</b></span>
+        </div>
+      </div>
+      <button class="btn ghost sm" onclick="testProv('${esc(p.id)}')">测试</button>
+      <button class="btn ghost sm" onclick="refreshModels('${esc(p.id)}')">拉模型</button>
+      <button class="btn ghost sm" onclick="openProvModal('${esc(p.id)}')">编辑</button>
+      <button class="btn danger sm" onclick="removeProv('${esc(p.id)}')">删除</button>
+    </div>`;
+  }).join('') || '<p class="muted">还没有供应商。</p>';
+}
+
+async function testProv(id) {
+  toast('测试中…');
+  try {
+    const r = await api('/provider/test', { id });
+    const mN = r.models?.models?.length ?? 0;
+    if (!r.models?.ok) return toast(`${id}: 模型列表失败 — ${r.models?.error || ''}`, 'err');
+    if (!r.probe) return toast(`${id}: ${mN} 个模型，但没有可测的`, 'warn');
+    if (r.probe.ok) {
+      const q = r.quota?.ok
+        ? (r.quota.kind === 'newapi' ? `已用 $${r.quota.usedUSD.toFixed(4)}` : '额度可读')
+        : '额度不可读';
+      toast(`${id}: 可用 ✓  ${mN} 个模型 · ${r.probe.ms}ms · ${q}`, 'ok');
+    } else {
+      toast(`${id}: 不可用 — ${r.probe.kind} ${String(r.probe.error || '').slice(0, 120)}`, 'err');
+    }
+    await loadAll();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function refreshModels(id) {
+  toast('拉取模型中…');
+  try {
+    const r = await api('/model/refresh', { id });
+    if (!r.ok) return toast(`${id}: ${r.error}`, 'err');
+    toast(`${id}: 新增 ${r.added} 个，共 ${r.total} 个`, 'ok');
+    await loadAll();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function removeProv(id) {
+  if (!confirm(`确定删除供应商「${id}」？它的模型和链条目都会一起删掉。`)) return;
+  try { await api('/provider/remove', { id }); toast('已删除', 'ok'); await loadAll(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+/* ---- provider modal ---- */
+function openProvModal(id) {
+  const p = id ? provOf(id) : null;
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <h3>${p ? '编辑供应商' : '添加供应商'}</h3>
+    <label class="f"><span>名称</span><input id="m-label" value="${esc(p?.label || '')}" placeholder="例如 Fuxing API"></label>
+    <label class="f"><span>接口地址（Base URL）</span><input id="m-base" value="${esc(p?.base || '')}" placeholder="https://api.example.com 或 https://api.example.com/v1"></label>
+    <label class="f"><span>协议</span>
+      <select id="m-api">
+        <option value="openai"${p?.api === 'openai' ? ' selected' : ''}>OpenAI 兼容（/chat/completions）</option>
+        <option value="anthropic"${p?.api === 'anthropic' ? ' selected' : ''}>Anthropic 兼容（/v1/messages）</option>
+      </select>
+    </label>
+    <label class="f"><span>API 密钥 ${p ? '（留空=不改）' : ''}</span><input id="m-key" placeholder="sk-..."></label>
+    <label class="f"><span>额度类型</span>
+      <select id="m-billing">
+        <option value="newapi"${(p?.billingKind || 'newapi') === 'newapi' ? ' selected' : ''}>new-api 系（显示已用金额）</option>
+        <option value="workbuddy"${p?.billingKind === 'workbuddy' ? ' selected' : ''}>WorkBuddy 代理（显示剩余积分）</option>
+        <option value="none"${p?.billingKind === 'none' ? ' selected' : ''}>不查询</option>
+      </select>
+    </label>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" id="m-cancel">取消</button>
+      <button class="btn" id="m-save">保存</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  bg.querySelector('#m-cancel').onclick = () => bg.remove();
+  bg.onclick = (e) => { if (e.target === bg) bg.remove(); };
+  bg.querySelector('#m-label').focus();
+
+  bg.querySelector('#m-save').onclick = async () => {
+    const label = bg.querySelector('#m-label').value.trim();
+    const base = bg.querySelector('#m-base').value.trim();
+    const apiv = bg.querySelector('#m-api').value;
+    const key = bg.querySelector('#m-key').value.trim();
+    const billingKind = bg.querySelector('#m-billing').value;
+    if (!label || !base) return toast('名称和地址必填', 'err');
+    try {
+      if (p) {
+        await api('/provider/update', { id: p.id, label, base, api: apiv, key, billingKind });
+      } else {
+        const r = await api('/provider/add', { label, base, api: apiv, key, billingKind });
+        bg.remove();
+        toast('已添加，正在拉取模型…', 'ok');
+        await api('/model/refresh', { id: r.id }).catch(() => {});
+        await loadAll();
+        return;
+      }
+      bg.remove();
+      toast('已保存', 'ok');
+      await loadAll();
+    } catch (e) { toast(e.message, 'err'); }
+  };
+}
+
+/* ---------- models ---------- */
+const modelFilter = {};   // providerId -> 搜索词
+const modelOpen = {};     // providerId -> 是否展开
+
+function renderModels() {
+  const list = S.providers || [];
+  $('modelPanels').innerHTML = list.map((p) => {
+    const all = p.models || [];
+    const q = (modelFilter[p.id] || '').toLowerCase();
+    const models = q ? all.filter((m) => m.id.toLowerCase().includes(q) || (m.name || '').toLowerCase().includes(q)) : all;
+    const enabledN = all.filter((m) => m.enabled !== false).length;
+    const open = modelOpen[p.id] || q || all.length <= 20;
+    const shown = open ? models : models.slice(0, 8);
+
+    const rows = shown.map((m) => `
+      <tr>
+        <td style="width:44px">
+          <label class="sw"><input type="checkbox" ${m.enabled !== false ? 'checked' : ''}
+            onchange="toggleModel('${esc(p.id)}','${esc(m.id)}',this.checked)"><i></i></label>
+        </td>
+        <td class="mono" style="font-size:12.5px">${esc(m.id)}</td>
+        <td class="mono" style="font-size:11.5px;color:var(--tx3)">${esc(m.name || '')}</td>
+        <td style="width:130px"><input type="number" value="${m.contextWindow || 0}" style="padding:4px 7px;font-size:12px"
+            onchange="updateModel('${esc(p.id)}','${esc(m.id)}','contextWindow',this.value)"></td>
+        <td style="width:110px"><input type="number" value="${m.maxTokens || 4096}" style="padding:4px 7px;font-size:12px"
+            onchange="updateModel('${esc(p.id)}','${esc(m.id)}','maxTokens',this.value)"></td>
+        <td style="width:60px"><button class="btn danger sm" onclick="removeModel('${esc(p.id)}','${esc(m.id)}')">删</button></td>
+      </tr>`).join('');
+
+    const hidden = models.length - shown.length;
+    return `<div class="card" style="background:var(--card2)">
+      <h2>${esc(p.label)} <span class="tag">${esc(p.api)}</span>
+        <span class="sub">${enabledN}/${all.length} 启用</span>
+        <span class="spacer" style="flex:1"></span>
+        ${all.length > 8 ? `<input placeholder="搜索模型…" value="${esc(modelFilter[p.id] || '')}"
+            oninput="setModelFilter('${esc(p.id)}',this.value)"
+            style="width:170px;padding:4px 9px;font-size:12px">` : ''}
+      </h2>
+      ${all.length ? `<div style="overflow-x:auto"><table>
+        <thead><tr><th>启</th><th>模型 ID</th><th>显示名</th><th>上下文窗口</th><th>max_tokens</th><th></th></tr></thead>
+        <tbody>${rows}</tbody></table></div>
+        ${hidden > 0 ? `<button class="btn ghost sm mt" onclick="setModelOpen('${esc(p.id)}',true)">显示其余 ${hidden} 个</button>` : ''}
+        ${open && !q && all.length > 8 ? `<button class="btn ghost sm mt" onclick="setModelOpen('${esc(p.id)}',false)">收起</button>` : ''}`
+        : '<p class="muted">还没有模型 — 点下面「拉取模型」自动获取。</p>'}
+      <div class="row mt">
+        <button class="btn ghost sm" onclick="refreshModels('${esc(p.id)}')">拉取模型</button>
+        <button class="btn ghost sm" onclick="openModelModal('${esc(p.id)}')">＋ 手动加模型</button>
+      </div>
+    </div>`;
+  }).join('') || '<p class="muted">先去「供应商」页添加一家。</p>';
+}
+
+function setModelOpen(pid, v) {
+  modelOpen[pid] = v;
+  renderModels();
+}
+
+function setModelFilter(pid, v) {
+  modelFilter[pid] = v;
+  renderModels();
+  // 重绘会丢焦点，重新聚焦到同一个搜索框并还原光标
+  const inp = [...document.querySelectorAll('#modelPanels input[placeholder="搜索模型…"]')]
+    .find((el) => el.closest('.card')?.querySelector('h2')?.textContent.includes(
+      (S.providers || []).find((p) => p.id === pid)?.label || '\u0000'));
+  if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+}
+
+async function toggleModel(providerId, modelId, enabled) {
+  try { await api('/model/toggle', { providerId, modelId, enabled }); await loadAll(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+async function updateModel(providerId, modelId, field, value) {
+  try {
+    await api('/model/update', { providerId, modelId, [field]: Number(value) });
+    toast('已保存', 'ok');
+  } catch (e) { toast(e.message, 'err'); }
+}
+async function removeModel(providerId, modelId) {  if (!confirm(`删除模型「${modelId}」？`)) return;
+  try { await api('/model/remove', { providerId, modelId }); toast('已删除', 'ok'); await loadAll(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+async function fillContext() {
+  toast('补全中…');
+  try {
+    const r = await api('/model/guess-context', {});
+    toast(`已补全 ${r.filled} 个模型的上下文长度`, 'ok');
+    await loadAll();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+function openModelModal(providerId) {
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal">
+    <h3>手动添加模型</h3>
+    <label class="f"><span>模型 ID（上游真实名字）</span><input id="mm-id" placeholder="claude-sonnet-4-6"></label>
+    <label class="f"><span>显示名（可空）</span><input id="mm-name"></label>
+    <div class="grid g3">
+      <label class="f"><span>上下文窗口</span><input id="mm-ctx" type="number" value="0"></label>
+      <label class="f"><span>max_tokens</span><input id="mm-max" type="number" value="4096"></label>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" id="mm-cancel">取消</button>
+      <button class="btn" id="mm-save">添加</button>
+    </div>
+  </div>`;
+  document.body.appendChild(bg);
+  bg.querySelector('#mm-cancel').onclick = () => bg.remove();
+  bg.onclick = (e) => { if (e.target === bg) bg.remove(); };
+  bg.querySelector('#mm-id').focus();
+  bg.querySelector('#mm-save').onclick = async () => {
+    const modelId = bg.querySelector('#mm-id').value.trim();
+    if (!modelId) return toast('模型 ID 必填', 'err');
+    try {
+      await api('/model/add', {
+        providerId, modelId,
+        name: bg.querySelector('#mm-name').value.trim() || modelId,
+        contextWindow: Number(bg.querySelector('#mm-ctx').value) || 0,
+        maxTokens: Number(bg.querySelector('#mm-max').value) || 4096,
+      });
+      bg.remove(); toast('已添加', 'ok'); await loadAll();
+    } catch (e) { toast(e.message, 'err'); }
+  };
+}
+
+/* ---------- usage ---------- */
+function renderUsage(days) {
+  const keys = Object.keys(days).sort().reverse().slice(0, 7);
+  $('t-usage').querySelector('tbody').innerHTML = keys.map((k) => {
+    const d = days[k];
+    return `<tr>
+      <td class="mono">${esc(k)}</td>
+      <td>${d.calls}</td>
+      <td style="color:${d.errors ? 'var(--err)' : 'var(--tx3)'}">${d.errors}</td>
+      <td class="mono">${fmtK(d.promptTokens)}</td>
+      <td class="mono">${fmtK(d.completionTokens)}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">还没有调用记录。</td></tr>';
+}
+
+/* ---------- accounts ---------- */
+async function loadAccounts(withCredit) {
+  try {
+    // 余额要先串行打上游，慢一点，所以分两次：先出账号，再补余额
+    const a = await api('/accounts');
+    renderAccounts(a);
+    if (withCredit !== false) loadAccountCredits();
+  } catch (e) {
+    $('acctList').innerHTML = '<p class="muted">读取账号失败：' + esc(e.message) + '</p>';
+  }
+}
+
+async function loadAccountCredits() {
+  try {
+    const a = await api('/accounts?credit=1');
+    renderAccounts(a);
+  } catch {}
+}
+
+function renderAccounts(a) {
+  try {
+    const render = (site, arr) => {
+      if (!arr.length) return `<p class="muted">${site}：无账号</p>`;
+      return arr.map((x) => {
+        const cool = x.cooldownUntil && x.cooldownUntil > Date.now();
+        const exp = x.expiresAt ? new Date(x.expiresAt) : null;
+        const expOk = exp && exp > new Date();
+        // 签到状态标签
+        let ckTag = '';
+        if (!x.checkinEnabled) ckTag = '<span class="tag">签到关</span>';
+        else if (x.lastCheckinOk === true && x.lastCheckinSkipped) ckTag = '<span class="tag ok">已签</span>';
+        else if (x.lastCheckinOk === true) ckTag = '<span class="tag ok">签到成功</span>';
+        else if (x.lastCheckinOk === false) ckTag = '<span class="tag err">签到失败</span>';
+        else ckTag = '<span class="tag warn">待签到</span>';
+        return `<div class="chain-item" style="cursor:default">
+          <div style="flex:1;min-width:0">
+            <div class="chain-top">
+              <span class="chain-prov">${esc(x.nickname || x.label || x.id)}</span>
+              <span class="tag acc">${esc(site)}</span>
+              <span class="tag ${x.enabled ? 'ok' : 'err'}">${x.enabled ? '可用' : '停用'}</span>
+              ${cool ? '<span class="tag warn">冷却中</span>' : ''}
+              ${x.exhaustedAt ? '<span class="tag err">额度耗尽</span>' : ''}
+              ${ckTag}
+            </div>
+            <div class="chain-meta">
+              <span class="mono" style="font-size:11px">${esc(x.id)}</span>
+              ${exp ? `<span>令牌 ${expOk ? '有效至 ' + exp.toLocaleDateString('zh-CN') : '已过期'}</span>` : ''}
+              <span>失败 <b>${x.failCount || 0}</b></span>
+              ${x.lastError ? `<span style="color:var(--err)">${esc(String(x.lastError).slice(0, 70))}</span>` : ''}
+            </div>
+            ${x.checkinDisabledReason ? `<div class="chain-meta"><span style="color:var(--warn)">签到：${esc(x.checkinDisabledReason)}</span></div>` : ''}
+            ${x.lastCheckinMsg ? `<div class="chain-meta"><span class="muted" style="font-size:11px">上次签到：${esc(String(x.lastCheckinMsg).slice(0, 80))}</span></div>` : ''}
+            ${x.creditError ? `<div class="chain-meta"><span style="color:var(--err);font-size:11px">余额查询：${esc(String(x.creditError).slice(0, 70))}</span></div>` : ''}
+            ${x.creditDetail && x.creditDetail.length ? `<div class="chain-meta"><span class="muted" style="font-size:11px">${x.creditDetail.slice(0, 3).map((d) => esc(d.package) + ' ' + d.remain).join(' · ')}${x.creditDetail.length > 3 ? ' …共' + x.creditDetail.length + '个包' : ''}</span></div>` : ''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0">
+            <div style="font-size:20px;font-weight:600;line-height:1.1;color:${x.credit == null ? 'var(--tx3)' : x.credit > 0 ? 'var(--ok)' : 'var(--err)'}">
+              ${x.credit == null ? '—' : x.credit}
+            </div>
+            <div class="muted" style="font-size:10px;margin-bottom:4px">剩余积分</div>
+            <label class="sw" title="这个账号是否自动签到"><input type="checkbox" ${x.checkinEnabled ? 'checked' : ''}
+              onchange="toggleAccountCheckin('${esc(site)}','${esc(x.id)}',this.checked)"><i></i></label>
+            <span class="muted" style="font-size:10px">签到</span>
+          </div>
+        </div>`;
+      }).join('');
+    };
+    const sum = (arr) => (arr || []).reduce((n, x) => n + (typeof x.credit === 'number' ? x.credit : 0), 0);
+    $('acctList').innerHTML =
+      '<h3 style="font-size:13px;margin:6px 0 10px;color:var(--tx2)">国内版 <span class="muted" style="font-weight:400">合计 ' + sum(a['cn-cli']) + '</span></h3>' + render('cn-cli', a['cn-cli'] || []) +
+      '<h3 style="font-size:13px;margin:16px 0 10px;color:var(--tx2)">国际版 <span class="muted" style="font-weight:400">合计 ' + sum(a['intl-work']) + '</span></h3>' + render('intl-work', a['intl-work'] || []);
+    loadQuota();
+  } catch (e) {
+    $('acctList').innerHTML = '<p class="muted">读取账号失败：' + esc(e.message) + '</p>';
+  }
+}
+
+async function toggleAccountCheckin(site, accountId, enabled) {
+  try {
+    await api('/account/checkin-toggle', { site, accountId, enabled });
+    toast(enabled ? '已开启该账号签到' : '已关闭该账号签到', 'ok');
+    await loadAccounts();
+  } catch (e) {
+    toast('保存失败: ' + e.message, 'err');
+  }
+}
+
+async function loadQuota() {
+  loadAllQuota();
+}
+
+const quotaCache = {};
+
+async function loadAllQuota() {
+  const provs = (S.providers || []).filter((p) => p.billingKind && p.billingKind !== 'none');
+  const box = $('provQuota');
+  if (!provs.length) { box.innerHTML = '<p class="muted">没有可查询额度的供应商。</p>'; return; }
+  box.innerHTML = provs.map((p) => `
+    <div class="chain-item" style="cursor:default">
+      <div style="flex:1;min-width:0">
+        <div class="chain-top">
+          <span class="chain-prov">${esc(p.label)}</span>
+          <span class="tag">${esc(p.billingKind)}</span>
+          <span id="q-${esc(p.id)}" class="muted">查询中…</span>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // 并发查，串行的话 novaai 一家就要 11s，全部加起来用户要盯 15 秒
+  await Promise.all(provs.map(async (p) => {
+    try {
+      const q = await api('/provider/quota', { id: p.id });
+      const el = $('q-' + p.id);
+      if (!el) return;
+      if (!q.ok) {
+        el.innerHTML = q.unsupported
+          ? `<span class="tag">${esc(String(q.error || '无额度接口'))}</span>`
+          : `<span class="tag err">查询失败</span> ${esc(String(q.error || '').slice(0, 80))}`;
+        return;
+      }
+      if (q.kind === 'workbuddy') {
+        // 站点那个 credit 只是「默认账号」的余额，多个账号不能相加也不能代表全站，
+        // 所以这里按账号逐条列出来。
+        el.innerHTML = (q.sites || []).map((s) => {
+          const sum = (s.accounts || []).reduce((n, a) => n + (typeof a.credit === 'number' ? a.credit : 0), 0);
+          const rows = (s.accounts || []).map((a) =>
+            `<span style="display:inline-block;margin:0 10px 2px 0">` +
+            `<span class="mono" style="font-size:11px">${esc(String(a.label || a.id).slice(0, 18))}</span> ` +
+            (a.credit != null
+              ? `<b style="color:${a.credit > 0 ? 'var(--ok)' : 'var(--err)'}">${a.credit}</b>`
+              : `<span class="muted">${a.creditError ? esc(String(a.creditError).slice(0, 30)) : '—'}</span>`) +
+            (a.enabled === false ? ' <span class="muted" style="font-size:10px">停用</span>' : '') +
+            `</span>`).join('');
+          return `<div style="margin-bottom:6px">`
+            + `<span class="tag ${s.loggedIn ? 'ok' : 'err'}">${esc(s.label || s.site)}</span>`
+            + (s.accounts && s.accounts.length
+                ? ` <span class="muted">共 ${s.accounts.length} 个账号 · 合计 <b style="color:var(--ok)">${sum}</b></span>`
+                : (s.credit != null ? ` 剩余积分 <b style="color:var(--ok)">${s.credit}</b>` : ''))
+            + (s.creditError ? ` <span style="color:var(--err)">${esc(s.creditError)}</span>` : '')
+            + (rows ? `<div style="margin-top:4px">${rows}</div>` : '')
+            + `</div>`;
+        }).join('') || '<span class="muted">无站点</span>';
+      } else if (q.kind === 'newapi') {
+        el.innerHTML = `已用 <b style="color:var(--warn)">$${(q.usedUSD || 0).toFixed(3)}</b>`
+          + (q.remainUSD != null ? ` &nbsp; 剩余 <b style="color:var(--ok)">$${q.remainUSD.toFixed(2)}</b>` : '');
+      } else {
+        el.innerHTML = '<span class="muted">不支持</span>';
+      }
+    } catch (e) {
+      const el = $('q-' + p.id);
+      if (el) el.innerHTML = `<span class="tag err">失败</span> ${esc(e.message.slice(0, 80))}`;
+    }
+  }));
+}
+
+/* ---------- checkin ---------- */
+async function loadCheckin() {
+  try {
+    const c = await api('/checkin/status');
+    $('ckToggle').checked = !!c.enabled;
+    // 总开关只控制定时器；具体哪些账号签，看下面账号列表里各自的开关
+    $('ckText').textContent = c.enabled ? '定时器已开启（每个账号的开关在下方清单里）' : '定时器已关闭，不会自动签到';
+    $('ckText').style.color = c.enabled ? 'var(--ok)' : 'var(--tx3)';
+    $('ckNext').textContent = c.next ? '下次：' + c.next : '';
+    $('ckLog').textContent = c.log || '（没有日志）';
+  } catch (e) {
+    $('ckText').textContent = '读取失败：' + e.message;
+  }
+}
+
+async function toggleCheckin(on) {
+  try {
+    await api('/checkin/toggle', { enabled: on });
+    toast(on ? '定时签到已开启' : '定时签到已关闭', 'ok');
+    await loadCheckin();
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+async function runCheckin() {
+  toast('已开始（立即执行，不等随机延迟）…');
+  try {
+    await api('/checkin/run', {});
+    setTimeout(() => { loadCheckin(); loadAccounts(); }, 3000);
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ---------- connect ---------- */
+function renderConnect() {
+  const base = location.origin + BASE + '/v1';
+  const rt = S.runtime || {};
+  const dockerBase = `http://${rt.dockerHost || '172.17.0.1'}:${rt.port || 8790}/v1`;
+  $('c-key').innerHTML = `<span style="color:var(--ok)">${esc(S.apiKey || '')}</span>
+    <button class="btn ghost sm" style="margin-left:8px" onclick="copyText('${esc(S.apiKey || '')}')">复制</button>`;
+  $('c-model').innerHTML = `<span style="color:var(--acc)">${esc(S.exposeModel || '')}</span>
+    <button class="btn ghost sm" style="margin-left:8px" onclick="copyText('${esc(S.exposeModel || '')}')">复制</button>`;
+  $('c-base').innerHTML = `<span style="color:var(--acc)">${esc(dockerBase)}</span>
+    <span class="muted" style="font-size:11px">（AstrBot 容器内用这个）</span>
+    <button class="btn ghost sm" style="margin-left:8px" onclick="copyText('${esc(dockerBase)}')">复制</button><br>
+    <span class="muted" style="font-size:11px">公网/面板：${esc(base)}</span>`;
+  $('c-base').innerHTML = `<span style="color:var(--acc)">${esc(dockerBase)}</span>
+    <span class="muted" style="font-size:11px">（AstrBot 容器内用这个）</span>
+    <button class="btn ghost sm" style="margin-left:8px" onclick="copyText('${esc(dockerBase)}')">复制</button><br>
+    <span class="muted" style="font-size:11px">公网/面板：${esc(base)}</span>`;
+  $('c-curl').textContent =
+`curl ${base}/chat/completions \\
+  -H "Authorization: Bearer <你的 API Key>" \\
+  -H "Content-Type: application/json" \\
+  -d '{"model":"${S.exposeModel || 'dafeiyu'}","messages":[{"role":"user","content":"你好"}]}'`;
+  $('setExpose').value = S.exposeModel || '';
+  $('setKey').value = '';
+  $('setKey').placeholder = '留空=不改';
+  $('setCool').value = Math.round((S.failover?.cooldownMs || 120000) / 1000);
+}
+
+async function saveSettings() {
+  const body = {
+    exposeModel: $('setExpose').value.trim(),
+    failover: { cooldownMs: (Number($('setCool').value) || 120) * 1000 },
+  };
+  const k = $('setKey').value.trim();
+  if (k) body.apiKey = k;
+  try { await api('/settings', body); toast('设置已保存', 'ok'); await loadAll(); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+/* ---------- vision ---------- */
+function renderVision() {
+  const v = S.visionModel || { providerId: '', modelId: '', enabled: false };
+  $('visEnable').checked = !!v.enabled;
+  // 供应商下拉：只列有可用模型的
+  const provs = (S.providers || []).filter((p) => (p.models || []).some((m) => m.enabled !== false));
+  $('visProv').innerHTML = provs.map((p) =>
+    `<option value="${esc(p.id)}"${p.id === v.providerId ? ' selected' : ''}>${esc(p.label)}</option>`
+  ).join('') || '<option value="">（没有可用供应商）</option>';
+  if (!v.providerId && provs.length) $('visProv').value = provs[0].id;
+  renderVisionModels(v.modelId);
+}
+
+function renderVisionModels(picked) {
+  const pid = $('visProv').value;
+  const p = provOf(pid);
+  const models = (p?.models || []).filter((m) => m.enabled !== false);
+  const cur = picked ?? $('visModel').value;
+  $('visModel').innerHTML = models.map((m) => {
+    const tag = m.supportsImages === true ? ' 🖼' : '';
+    return `<option value="${esc(m.id)}"${m.id === cur ? ' selected' : ''}>${esc(m.name || m.id)}${tag}</option>`;
+  }).join('') || '<option value="">（该供应商没有已启用模型）</option>';
+  const m = models.find((x) => x.id === $('visModel').value);
+  $('visHint').innerHTML = m
+    ? (m.supportsImages === true
+        ? '<span style="color:var(--ok)">这个模型上游标注支持图片 ✓</span>'
+        : '<span style="color:var(--warn)">上游没标注支持图片，建议点右边「测试」确认</span>')
+    : '';
+}
+
+function onVisProvChange() {
+  // 换供应商时模型列表要重生成，但不要立刻保存（此时 modelId 还是上一家的）
+  renderVisionModels('');
+  if ($('visModel').value) saveVision();
+}
+
+function onVisModelChange() {
+  renderVisionModels();
+  saveVision();
+}
+
+async function saveVision() {
+  const pid = $('visProv').value;
+  const mid = $('visModel').value;
+  if (!pid || !mid) return;
+  try {
+    await api('/settings', { visionModel: { providerId: pid, modelId: mid, enabled: $('visEnable').checked } });
+    // 静默成功，不弹 toast 免得每次改都弹
+    S.visionModel = { providerId: pid, modelId: mid, enabled: $('visEnable').checked };
+  } catch (e) { toast('保存失败: ' + e.message, 'err'); }
+}
+
+async function testVision() {
+  const pid = $('visProv').value;
+  const mid = $('visModel').value;
+  if (!pid || !mid) return toast('先选供应商和模型', 'err');
+  toast('发一张红色小图测试中…');
+  try {
+    const r = await api('/vision/test', { providerId: pid, modelId: mid });
+    if (r.ok) toast(`能看图 ✓ ${r.ms}ms — 它说「${r.reply}」`, 'ok');
+    else toast(`看不了 — ${r.status ? 'HTTP ' + r.status + ' ' : ''}${String(r.error || '').slice(0, 100)}`, 'err');
+  } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ---------- boot ---------- */
+// 返回按钮：挂在控制台 /relay/ 下时回到控制台根。
+// 独立跑在 8790 时也显示（用户可能记住了直连地址），指向控制台的直连地址。
+(function () {
+  const a = document.getElementById('backLink');
+  const m = location.pathname.match(/^(.*?)\/relay(?:\/|$)/);
+  if (m && m[1] !== '') {
+    a.href = m[1] + '/';                 // 挂在控制台下：回控制台
+  } else if (BASE) {
+    a.href = BASE.replace(/\/relay$/, '') + '/';
+  } else {
+    // 直连 8790：控制台在 8080
+    a.href = location.protocol + '//' + location.hostname + ':8080/';
+  }
+})();
+
+loadAll().then(() => {
+  const n = location.hash.slice(1);
+  if (n && $('tab-' + n)) showTab(n);
+});
+setInterval(() => { if (!document.hidden) loadAll(); }, 30000);
+</script>
+</body>
+</html>

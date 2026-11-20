@@ -1,0 +1,28 @@
+# 依赖
+node_modules/
+*.log
+
+# 密钥与本地配置 —— 这些绝对不能提交
+relay.json
+relay-state.json
+minimax-accounts.json
+*.pool.json
+checkin.log
+.ghtoken
+.env
+
+# 备份产物
+backups/
+*.tar.gz
+*.sha256
+
+# 证书
+*.crt
+*.key
+*.pem
+certs/
+
+# 系统
+.DS_Store
+Thumbs.db
+*.swp

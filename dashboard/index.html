@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大肥鱼 · 控制台</title>
+<style>
+:root{
+  --bg:#0a0e17;--bg-soft:#111827;--card:#151c2c;--card-hover:#1a2337;
+  --border:#1f2937;--border-light:#2d3748;
+  --text:#e8edf5;--text-dim:#8b98ac;--text-faint:#5a6b82;
+  --accent:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;
+  --purple:#8b5cf6;--cyan:#06b6d4;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(59,130,246,.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 90%, rgba(139,92,246,.07) 0%, transparent 45%);
+  background-attachment:fixed;
+}
+.topbar{position:sticky;top:0;z-index:100;backdrop-filter:blur(20px) saturate(180%);
+  background:rgba(10,14,23,.82);border-bottom:1px solid var(--border);padding:0 28px}
+.topbar-inner{max-width:1560px;margin:0 auto;height:68px;display:flex;align-items:center;gap:16px}
+.logo{display:flex;align-items:center;gap:11px;font-size:17px;font-weight:650;letter-spacing:.2px}
+.logo-icon{width:36px;height:36px;border-radius:11px;
+  background:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 100%);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  box-shadow:0 4px 16px rgba(59,130,246,.35)}
+.logo-sub{font-size:11.5px;color:var(--text-faint);font-weight:400;letter-spacing:.5px}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;
+  font-size:12.5px;font-weight:500;border:1px solid var(--border-light);background:var(--card);
+  color:var(--text-dim);transition:.2s}
+.pill.online{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.09);color:#34d399}
+.pill.offline{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.09);color:#f87171}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px rgba(16,185,129,.3);animation:pulse 2s infinite}
+.dot.amber{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.4)}
+.dot.red{background:var(--red);box-shadow:0 0 8px rgba(239,68,68,.4)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.wrap{max-width:1560px;margin:0 auto;padding:26px 28px 60px}
+.section-head{display:flex;align-items:baseline;gap:12px;margin:32px 0 16px}
+.section-head:first-child{margin-top:0}
+.section-title{font-size:15px;font-weight:640;letter-spacing:.3px}
+.section-desc{font-size:12.5px;color:var(--text-faint)}
+.grid{display:grid;gap:16px}
+.grid-svc{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.svc{position:relative;background:var(--card);border:1px solid var(--border);
+  border-radius:16px;padding:19px 20px 18px;transition:.25s cubic-bezier(.4,0,.2,1);overflow:hidden}
+.svc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:.25s}
+.svc:hover{border-color:var(--border-light);background:var(--card-hover);
+  transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.35)}
+.svc:hover::before{opacity:1}
+.svc.ok::before{background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:1}
+.svc.down::before{background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:1}
+.svc-top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.svc-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;
+  justify-content:center;font-size:16px;flex-shrink:0}
+.svc-name{font-size:14px;font-weight:600;letter-spacing:.2px}
+.svc-desc{font-size:11.5px;color:var(--text-faint);margin-top:2px}
+.svc-meta{display:flex;flex-direction:column;gap:7px;margin-bottom:15px}
+.meta-row{display:flex;justify-content:space-between;font-size:12.5px}
+.meta-k{color:var(--text-faint)}
+.meta-v{color:var(--text-dim);font-variant-numeric:tabular-nums}
+.meta-v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px}
+.svc-actions{display:flex;gap:8px}
+.btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 12px;border-radius:9px;font-size:12.5px;font-weight:550;
+  border:1px solid var(--border-light);background:rgba(255,255,255,.025);
+  color:var(--text-dim);cursor:pointer;text-decoration:none;transition:.18s}
+.btn:hover{background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.5);color:#93c5fd}
+.btn.primary{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.45);color:#93c5fd}
+.btn.primary:hover{background:rgba(59,130,246,.26)}
+.grid-stats{grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:17px 18px;transition:.22s}
+.stat:hover{border-color:var(--border-light);background:var(--card-hover)}
+.stat-label{font-size:11.5px;color:var(--text-faint);letter-spacing:.4px;
+  margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.stat-value{font-size:26px;font-weight:680;letter-spacing:-.5px;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.stat-unit{font-size:13px;font-weight:500;color:var(--text-faint);margin-left:3px}
+.stat-foot{font-size:11.5px;color:var(--text-faint);margin-top:9px}
+.bar{height:5px;border-radius:3px;background:rgba(255,255,255,.07);margin-top:11px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.fill-blue{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.fill-green{background:linear-gradient(90deg,#10b981,#34d399)}
+.fill-amber{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.fill-red{background:linear-gradient(90deg,#ef4444,#f87171)}
+.fill-purple{background:linear-gradient(90deg,#8b5cf6,#a78bfa)}
+.bot-card{background:linear-gradient(135deg,rgba(59,130,246,.09) 0%,rgba(139,92,246,.07) 100%);
+  border:1px solid rgba(59,130,246,.28);border-radius:18px;padding:22px 24px;
+  display:flex;align-items:center;gap:20px;position:relative;overflow:hidden}
+.bot-card::after{content:'';position:absolute;top:-60%;right:-8%;width:260px;height:260px;
+  border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.16) 0%,transparent 70%);
+  pointer-events:none}
+.bot-avatar{width:64px;height:64px;border-radius:18px;flex-shrink:0;
+  background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;
+  justify-content:center;font-size:30px;box-shadow:0 6px 24px rgba(59,130,246,.4)}
+.bot-info{flex:1;min-width:0}
+.bot-name{font-size:19px;font-weight:680;letter-spacing:.3px;display:flex;
+  align-items:center;gap:9px;flex-wrap:wrap}
+.bot-tag{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:6px;
+  background:rgba(16,185,129,.16);color:#34d399;border:1px solid rgba(16,185,129,.3);letter-spacing:.3px}
+.bot-meta{font-size:12.5px;color:var(--text-dim);margin-top:7px;display:flex;gap:18px;flex-wrap:wrap}
+.bot-meta span{display:inline-flex;align-items:center;gap:5px}
+.bot-meta b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.logs-box{background:#0b1018;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.logs-head{display:flex;align-items:center;gap:10px;padding:12px 16px;
+  border-bottom:1px solid var(--border);background:rgba(255,255,255,.015)}
+.logs-title{font-size:12.5px;font-weight:600;color:var(--text-dim)}
+.logs-body{padding:14px 16px;max-height:380px;overflow-y:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.85}
+.logs-body::-webkit-scrollbar{width:9px}
+.logs-body::-webkit-scrollbar-track{background:transparent}
+.logs-body::-webkit-scrollbar-thumb{background:#1f2937;border-radius:5px}
+.logs-body::-webkit-scrollbar-thumb:hover{background:#2d3748}
+.log-line{display:flex;gap:11px;white-space:pre-wrap;word-break:break-all}
+.log-time{color:#374151;flex-shrink:0;font-size:11px}
+.log-txt{color:#9ca3af}
+.log-line.info .log-txt{color:#93c5fd}
+.log-line.ok .log-txt{color:#6ee7b7}
+.log-line.warn .log-txt{color:#fcd34d}
+.log-line.err .log-txt{color:#fca5a5}
+.grid-quick{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+.quick{display:flex;align-items:center;gap:11px;background:var(--card);
+  border:1px solid var(--border);border-radius:12px;padding:14px 16px;cursor:pointer;
+  text-decoration:none;color:var(--text-dim);transition:.2s}
+.quick:hover{border-color:rgba(59,130,246,.45);background:var(--card-hover);color:var(--text)}
+.quick-ico{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:15px;background:rgba(59,130,246,.12)}
+.quick-txt{font-size:13px;font-weight:550}
+.pool-item{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12.5px}
+.pool-item:last-child{border-bottom:none}
+.pool-name{color:var(--text-dim);font-family:ui-monospace,monospace;font-size:11.5px}
+.pool-status{font-size:11.5px;padding:2px 8px;border-radius:5px}
+.pool-status.ok{background:rgba(16,185,129,.14);color:#34d399}
+.pool-status.bad{background:rgba(239,68,68,.12);color:#f87171}
+@media(max-width:768px){
+  .wrap{padding:18px 16px 40px}
+  .topbar{padding:0 16px}
+  .topbar-inner{height:60px}
+  .logo-sub{display:none}
+  .bot-card{flex-direction:column;text-align:center;gap:14px}
+  .bot-meta{justify-content:center}
+  .stat-value{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">
+      <div class="logo-icon">🐋</div>
+      <div>
+        <div>大肥鱼控制台</div>
+        <div class="logo-sub">DeepSeek Whale Console</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="pill" id="statusPill"><span class="dot"></span><span id="statusText">连接中…</span></div>
+    <div class="pill" id="clock">--:--:--</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="bot-card">
+    <div class="bot-avatar">🐋</div>
+    <div class="bot-info">
+      <div class="bot-name">
+        <span id="botName">大肥鱼</span>
+        <span class="bot-tag" id="botTag">检测中</span>
+      </div>
+      <div class="bot-meta">
+        <span>QQ <b id="botQQ">—</b></span>
+        <span>人设 <b id="botPersona">—</b></span>
+        <span>模型 <b id="botProvider">—</b></span>
+        <span>运行 <b id="botUptime">—</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title">服务状态</div>
+    <div class="section-desc">点击进入各自的 WebUI</div>
+  </div>
+  <div class="grid grid-svc" id="svcGrid"></div>
+
+  <div class="section-head">
+    <div class="section-title">服务器</div>
+    <div class="section-desc" id="sysDesc">阿里云 ECS</div>
+  </div>
+  <div class="grid grid-stats" id="statGrid"></div>
+
+  <div class="section-head">
+    <div class="section-title">模型账号池</div>
+    <div class="section-desc">WorkBuddy 多账号轮换</div>
+  </div>
+  <div class="grid grid-svc" id="poolGrid"></div>
+
+  <div class="section-head">
+    <div class="section-title">快捷入口</div>
+  </div>
+  <div class="grid grid-quick">
+    <a class="quick" id="qSnowluma" href="#" target="_blank"><div class="quick-ico">🐳</div><div class="quick-txt">SnowLuma</div></a>
+    <a class="quick" id="qAstrbot" href="#" target="_blank"><div class="quick-ico">🤖</div><div class="quick-txt">AstrBot</div></a>
+    <a class="quick" id="qRelay" href="#" target="_blank"><div class="quick-ico">🛰️</div><div class="quick-txt">中转站</div></a>
+    <a class="quick" id="qScan" href="#" target="_blank"><div class="quick-ico">📱</div><div class="quick-txt">扫码登录</div></a>
+  </div>
+
+  <div class="section-head">
+    <div class="section-title">实时日志</div>
+    <div class="section-desc" id="logDesc">AstrBot</div>
+  </div>
+  <div class="logs-box">
+    <div class="logs-head">
+      <span class="dot"></span>
+      <div class="logs-title">容器日志</div>
+      <div class="spacer"></div>
+      <select id="logSel" style="background:var(--card);color:var(--text-dim);border:1px solid var(--border-light);border-radius:6px;padding:4px 8px;font-size:12px;outline:none">
+        <option value="astrbot">AstrBot</option>
+        <option value="snowluma">SnowLuma</option>
+      </select>
+    </div>
+    <div class="logs-body" id="logsBody">
+      <div class="log-line"><span class="log-txt">加载中…</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// 部署配置由服务端注入（window.__DASH_CFG__），换主机/端口只改环境变量
+const CFG = Object.assign({ host: location.hostname, abPort: 6185, vncPort: 6081, vncPass: '' }, window.__DASH_CFG__ || {});
+function abUrl(){ return 'http://' + CFG.host + ':' + CFG.abPort; }
+function vncUrl(){
+  return 'http://' + CFG.host + ':' + CFG.vncPort + '/vnc.html'
+    + '?host=' + encodeURIComponent(CFG.host)
+    + '&port=' + CFG.vncPort
+    + '&autoconnect=1&resize=scale&reconnect=1&reconnect_delay=2000'
+    + '&password=' + encodeURIComponent(CFG.vncPass);
+}
+
+function fmtBytes(b){
+  if(!b) return '0';
+  const g = b/1073741824;
+  if(g>=1) return g.toFixed(2);
+  const m = b/1048576;
+  if(m>=1) return m.toFixed(0);
+  return (b/1024).toFixed(0);
+}
+function unitOf(b){
+  if(!b) return 'B';
+  const g = b/1073741824;
+  if(g>=1) return 'GB';
+  const m = b/1048576;
+  if(m>=1) return 'MB';
+  return 'KB';
+}
+function fmtUptime(sec){
+  if(!sec) return '—';
+  const d = Math.floor(sec/86400), h = Math.floor(sec%86400/3600), m = Math.floor(sec%3600/60);
+  if(d>0) return `${d}天${h}时`;
+  if(h>0) return `${h}时${m}分`;
+  return `${m}分`;
+}
+function pct(a,b){ return b>0 ? Math.min(100, Math.round(a/b*100)) : 0; }
+function barColor(p){
+  if(p>=85) return 'fill-red';
+  if(p>=65) return 'fill-amber';
+  return 'fill-blue';
+}
+
+// 时钟
+setInterval(()=>{
+  const d=new Date(), p=n=>String(n).padStart(2,'0');
+  $('clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+},1000);
+
+let lastData = null;
+
+async function refresh(){
+  try{
+    const r = await fetch('/api/all');
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    lastData = d;
+    render(d);
+    $('statusPill').className='pill online';
+    const q = d.services && d.services.qq;
+    $('statusText').textContent = q ? '全部正常' : 'QQ 未登录';
+  }catch(e){
+    $('statusPill').className='pill offline';
+    $('statusText').textContent='连接失败';
+  }
+}
+
+function render(d){
+  const {services:svc, system:sys, bot, pool} = d;
+
+  // ---- Bot ----
+  // 登录态以 SnowLuma 的 OneBot get_login_info 为准，不再写死「在线」
+  const tag = $('botTag');
+  if(svc.qq){
+    $('botName').textContent = svc.qq.nick || '大肥鱼';
+    $('botQQ').textContent = svc.qq.uid || '—';
+    if(tag){ tag.textContent = '在线'; tag.style.background = 'rgba(16,185,129,.15)';
+             tag.style.color = '#34d399'; tag.style.borderColor = 'rgba(16,185,129,.35)'; }
+  } else {
+    $('botName').textContent = '大肥鱼';
+    $('botQQ').textContent = '未登录';
+    if(tag){ tag.textContent = '离线'; tag.style.background = 'rgba(239,68,68,.13)';
+             tag.style.color = '#f87171'; tag.style.borderColor = 'rgba(239,68,68,.32)'; }
+  }
+  // SnowLuma 服务卡片上标出 WebUI / 登录状态
+  const slUp = svc.snowluma && svc.snowluma.up;
+  if(svc.snowluma){
+    svc.snowluma.desc = svc.qq ? '已登录 · QQ 协议端'
+      : (slUp ? '未登录 · 点「扫码」' : 'QQ 协议端');
+  }
+  $('botPersona').textContent = bot.persona || '—';
+  $('botProvider').textContent = bot.provider || '—';
+  $('botUptime').textContent = fmtUptime(sys.uptime);
+
+  // ---- 服务卡片 ----
+  const svcDefs = [
+    {key:'snowluma', icon:'🐳', color:'16,185,129', port:'5099 / 6081 / 3000 / 3001',
+     links:[{t:'WebUI',u:'/go/snowluma'},{t:'扫码',u:vncUrl()}]},
+    {key:'astrbot', icon:'🤖', color:'59,130,246', port:'6185',
+     links:[{t:'WebUI',u:abUrl()},{t:'日志',u:'#'}]},
+    {key:'relay', icon:'🛰️', color:'245,158,11', port:'8790',
+     links:[{t:'管理面板',u:'/relay/'},{t:'健康',u:'/relay/health'}]},
+  ];
+
+  $('svcGrid').innerHTML = svcDefs.map(def=>{
+    const s = svc[def.key] || {up:false, status:'未知', desc:''};
+    const cls = s.up ? 'ok' : 'down';
+    const statusColor = s.up ? '#34d399' : '#f87171';
+    const statusText = s.up ? '运行中' : '已停止';
+    return `<div class="svc ${cls}">
+      <div class="svc-top">
+        <div class="svc-icon" style="background:rgba(${def.color},.14);color:rgb(${def.color})">${def.icon}</div>
+        <div><div class="svc-name">${s.name||def.key}</div><div class="svc-desc">${s.desc||''}</div></div>
+      </div>
+      <div class="svc-meta">
+        <div class="meta-row"><span class="meta-k">状态</span><span class="meta-v" style="color:${statusColor}">${statusText}</span></div>
+        <div class="meta-row"><span class="meta-k">端口</span><span class="meta-v mono">${def.port}</span></div>
+        <div class="meta-row"><span class="meta-k">运行</span><span class="meta-v">${fmtUptime(sys.uptime)}</span></div>
+      </div>
+      <div class="svc-actions">
+        ${def.links.map(l=>`<a class="btn primary" href="${l.u}" target="_blank">${l.t}</a>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  // ---- 系统指标 ----
+  const memPct = pct(sys.mem.used, sys.mem.total);
+  const diskPct = sys.disk.pct || pct(sys.disk.used, sys.disk.total);
+  const swapPct = pct(sys.swap.used, sys.swap.total);
+
+  $('sysDesc').textContent = `阿里云 ECS · 广州 · 2 核 2G`;
+  $('statGrid').innerHTML = `
+    <div class="stat">
+      <div class="stat-label">CPU 使用率</div>
+      <div class="stat-value">${sys.cpu}<span class="stat-unit">%</span></div>
+      <div class="bar"><div class="bar-fill ${barColor(sys.cpu)}" style="width:${sys.cpu}%"></div></div>
+      <div class="stat-foot">2 核心</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">内存</div>
+      <div class="stat-value">${fmtBytes(sys.mem.used)}<span class="stat-unit">${unitOf(sys.mem.used)}</span></div>
+      <div class="bar"><div class="bar-fill ${barColor(memPct)}" style="width:${memPct}%"></div></div>
+      <div class="stat-foot">共 ${fmtBytes(sys.mem.total)} ${unitOf(sys.mem.total)} · 可用 ${fmtBytes(sys.mem.avail)} ${unitOf(sys.mem.avail)}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">磁盘</div>
+      <div class="stat-value">${fmtBytes(sys.disk.used)}<span class="stat-unit">${unitOf(sys.disk.used)}</span></div>
+      <div class="bar"><div class="bar-fill ${barColor(diskPct)}" style="width:${diskPct}%"></div></div>
+      <div class="stat-foot">共 ${fmtBytes(sys.disk.total)} ${unitOf(sys.disk.total)} · 剩余 ${fmtBytes(sys.disk.avail)} ${unitOf(sys.disk.avail)}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Swap</div>
+      <div class="stat-value">${fmtBytes(sys.swap.used)}<span class="stat-unit">${unitOf(sys.swap.used)}</span></div>
+      <div class="bar"><div class="bar-fill fill-green" style="width:${swapPct}%"></div></div>
+      <div class="stat-foot">共 ${fmtBytes(sys.swap.total)} ${unitOf(sys.swap.total)} · ${swapPct}%</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">运行时长</div>
+      <div class="stat-value" style="font-size:22px">${fmtUptime(sys.uptime)}</div>
+      <div class="stat-foot">服务器持续运行</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">唤醒关键词</div>
+      <div class="stat-value" style="font-size:15px;line-height:1.5">${(bot.wake||[]).join(' / ')||'—'}</div>
+      <div class="stat-foot">群里说这些词会回</div>
+    </div>
+  `;
+
+  // ---- 账号池 ----
+  $('poolGrid').innerHTML = (pool||[]).map(site=>{
+    const rows = site.accounts.map(a=>{
+      const ok = /可用/.test(a.status);
+      return `<div class="pool-item">
+        <span class="pool-name">${a.name.length>22?a.name.slice(0,22)+'…':a.name}</span>
+        <span class="pool-status ${ok?'ok':'bad'}">${ok?'可用':'限流'}</span>
+      </div>`;
+    }).join('') || '<div class="pool-item"><span class="pool-name">无账号</span></div>';
+    return `<div class="svc">
+      <div class="svc-top">
+        <div class="svc-icon" style="background:rgba(6,182,212,.14);color:#22d3ee">🗂️</div>
+        <div><div class="svc-name">${site.site}</div><div class="svc-desc">${site.count} 个账号</div></div>
+      </div>
+      <div style="margin-top:6px">${rows}</div>
+    </div>`;
+  }).join('') || '<div class="svc"><div class="svc-meta"><div class="meta-row"><span class="meta-k">无账号池</span></div></div></div>';
+
+  // ---- 快捷入口 ----
+  $('qSnowluma').href='/go/snowluma';
+  $('qAstrbot').href=abUrl();
+  $('qRelay').href='/relay/';
+  // noVNC 必须带 host/port/password 才能自动连（path=/websockify）。
+  // 只给 :6081 裸地址的话，用户还得自己在页面里点连接、手输密码。
+  $('qScan').href=vncUrl();
+}
+
+// ---- 日志 ----
+async function loadLogs(){
+  const c = $('logSel').value;
+  $('logDesc').textContent = c === 'astrbot' ? 'AstrBot' : (c === 'snowluma' ? 'SnowLuma' : c);
+  try{
+    const r = await fetch('/api/logs?container='+c+'&lines=120');
+    const d = await r.json();
+    $('logsBody').innerHTML = (d.lines||[]).map(l=>
+      `<div class="log-line ${l.level}"><span class="log-time">${l.time}</span><span class="log-txt">${escapeHtml(l.text)}</span></div>`
+    ).join('') || '<div class="log-line"><span class="log-txt">暂无日志</span></div>';
+    $('logsBody').scrollTop = $('logsBody').scrollHeight;
+  }catch(e){
+    $('logsBody').innerHTML = '<div class="log-line err"><span class="log-txt">日志加载失败</span></div>';
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+$('logSel').addEventListener('change', loadLogs);
+
+// ---- 启动 ----
+refresh();
+loadLogs();
+setInterval(refresh, 5000);
+setInterval(loadLogs, 10000);
+</script>
+</body>
+</html>

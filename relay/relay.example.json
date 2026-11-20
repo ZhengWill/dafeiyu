@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "port": 8790,
+  "host": "0.0.0.0",
+  "apiKey": "REPLACE_ME_RELAY_API_KEY",
+  "exposeModel": "dafeiyu",
+  "visionModel": {
+    "providerId": "",
+    "modelId": "",
+    "enabled": false
+  },
+  "fallbackReply": "（鱼鱼现在没白饭了…稍后再叫我）",
+  "providers": [
+    {
+      "id": "example-openai",
+      "label": "示例供应商 A（OpenAI 协议）",
+      "api": "openai",
+      "base": "https://api.example-a.com/v1",
+      "key": "REPLACE_ME_KEY_A",
+      "enabled": true,
+      "billingKind": "newapi",
+      "models": [
+        {
+          "id": "deepseek-chat",
+          "name": "DeepSeek Chat",
+          "enabled": true,
+          "contextWindow": 65536,
+          "maxTokens": 4096
+        }
+      ]
+    },
+    {
+      "id": "example-anthropic",
+      "label": "示例供应商 B（Anthropic 协议）",
+      "api": "anthropic",
+      "base": "https://api.example-b.com",
+      "key": "REPLACE_ME_KEY_B",
+      "authStyle": "bearer",
+      "enabled": false,
+      "billingKind": "none",
+      "models": [
+        {
+          "id": "claude-sonnet-4-6",
+          "name": "Claude Sonnet 4.6",
+          "enabled": true,
+          "contextWindow": 200000,
+          "maxTokens": 8192
+        }
+      ]
+    }
+  ],
+  "chain": [
+    {
+      "providerId": "example-openai",
+      "modelId": "deepseek-chat",
+      "enabled": true
+    },
+    {
+      "providerId": "example-anthropic",
+      "modelId": "claude-sonnet-4-6",
+      "enabled": false
+    }
+  ],
+  "checkin": {
+    "enabled": false
+  },
+  "failover": {
+    "probeIntervalMs": 300000,
+    "cooldownMs": 120000,
+    "maxFailBeforeSkip": 1
+  }
+}

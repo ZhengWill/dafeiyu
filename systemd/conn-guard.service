@@ -1,0 +1,24 @@
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 部署说明：user 级 systemd 单元（放在 ~/.config/systemd/user/）。
+#   1. 按实际路径修改 ExecStart / WorkingDirectory
+#   2. systemctl --user daemon-reload
+#   3. systemctl --user enable --now <unit>
+#   4. loginctl enable-linger $USER
+
+[Unit]
+Description=AstrBot connection guard (restart bot only, never the protocol side)
+After=network.target docker.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /root/bot/conn-guard.sh
+Restart=always
+RestartSec=10
+# 守卫脚本用到的参数
+Environment=OB_PORT=3000
+Environment=OB_TOKEN=REPLACE_ME
+# Environment=CHECK_SEC=120
+
+[Install]
+WantedBy=default.target

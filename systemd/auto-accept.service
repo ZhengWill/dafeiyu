@@ -1,0 +1,26 @@
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 部署说明：user 级 systemd 单元（放在 ~/.config/systemd/user/）。
+#   1. 按实际路径修改 ExecStart / WorkingDirectory
+#   2. systemctl --user daemon-reload
+#   3. systemctl --user enable --now <unit>
+#   4. loginctl enable-linger $USER
+
+[Unit]
+Description=Auto accept friend requests and group invites (standalone)
+After=network.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/bot
+ExecStart=/usr/bin/node /root/bot/auto-accept.mjs
+Restart=always
+RestartSec=10
+Environment=WS_URL=ws://127.0.0.1:3001
+Environment=OB_HTTP=http://127.0.0.1:3000
+Environment=OB_TOKEN=REPLACE_ME
+StandardOutput=append:/root/bot/auto-accept.log
+StandardError=append:/root/bot/auto-accept.log
+
+[Install]
+WantedBy=default.target

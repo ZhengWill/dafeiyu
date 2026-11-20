@@ -1,0 +1,27 @@
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 部署说明：user 级 systemd 单元（放在 ~/.config/systemd/user/）。
+#   1. 按实际路径修改 ExecStart / WorkingDirectory
+#   2. systemctl --user daemon-reload
+#   3. systemctl --user enable --now <unit>
+#   4. loginctl enable-linger $USER
+
+[Unit]
+Description=Model failover daemon (predecessor of relay, kept for reference)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/bot
+ExecStart=/usr/bin/node /root/bot/model-failover.mjs
+Restart=always
+RestartSec=15
+Environment=PROXY_BASE=http://127.0.0.1:8788/v1
+Environment=PROXY_KEY=REPLACE_ME
+# Environment=KEY_INTERN=REPLACE_ME
+# Environment=KEY_NOVA=REPLACE_ME
+StandardOutput=append:/root/bot/model-failover.log
+StandardError=append:/root/bot/model-failover.log
+
+[Install]
+WantedBy=default.target

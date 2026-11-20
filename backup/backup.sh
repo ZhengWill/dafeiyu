@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 # 大肥鱼部署备份
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 【第三方致谢】
+#   本脚本会备份 workbuddy-openai-proxy 的配置与账号池（不备份其源码）。
+#   workbuddy-openai-proxy — 作者 yuan240324，MIT License
+#   https://github.com/yuan240324/workbuddy-openai-proxy
+#   本脚本不包含、不改写该项目的任何代码。
+#   完整说明见 CREDITS.md
 #
 # 设计原则：
 #   1. 只备"重装时要手写"的东西 —— 配置、账号池、代码、systemd 单元。

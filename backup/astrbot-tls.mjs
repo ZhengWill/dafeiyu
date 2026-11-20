@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-/**
+/** *
+ * Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+ * 本文件为原创实现（接口经抓包实测），无第三方代码。
+
  * astrbot-tls.mjs —— AstrBot 面板的 HTTPS 前置代理
  * ------------------------------------------------------------------
  * 为什么不用 AstrBot 自带的 ssl.enable：

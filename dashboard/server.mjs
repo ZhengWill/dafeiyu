@@ -2,6 +2,15 @@
 /**
  * 大肥鱼控制台 - 后端
  * 纯 Node 标准库，零依赖。监听 127.0.0.1:8080
+ *
+ * Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+ *
+ * 【第三方致谢】
+ *   • workbuddy-openai-proxy — yuan240324, MIT
+ *     https://github.com/yuan240324/workbuddy-openai-proxy
+ *     本文件通过其 /console/api/* 接口读取账号池状态，不包含其源码。
+ *   • SnowLuma (motricseven7) / AstrBot (AGPL-3.0) — 通过反向代理对接，无代码链接。
+ * 完整说明见 CREDITS.md
  */
 import http from 'node:http';
 import fs from 'node:fs';

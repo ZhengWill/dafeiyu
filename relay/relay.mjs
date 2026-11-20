@@ -2,6 +2,26 @@
 /**
  * 大肥鱼中转站 relay.mjs
  * ---------------------------------------------------------------
+ * Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+ *
+ * 【第三方致谢】
+ * 本项目为原创实现，但以下部分参考或对接了他人项目，特此声明：
+ *
+ *   • workbuddy-openai-proxy — 作者 yuan240324，MIT License
+ *     https://github.com/yuan240324/workbuddy-openai-proxy
+ *     本文件中「多账号池 / 额度降级 / 失败分类(quota|rate|auth|network)」
+ *     的设计思路与数据结构参照该项目实现重写；
+ *     账号池与额度面板通过其 /console/api/* 接口对接。
+ *     本文件不包含其任何源码副本。
+ *
+ *   • AstrBot — AGPL-3.0，https://github.com/AstrBotDevs/AstrBot
+ *     仅作为下游客户端，通过 HTTP 接口通信，无代码链接。
+ *
+ *   • OpenAI Chat Completions / Anthropic Messages 公开 API 规范
+ *     协议互转格式的依据。
+ *
+ * 完整说明见 CREDITS.md
+ * ---------------------------------------------------------------
  * 统一模型网关。零依赖，纯 Node 标准库。
  *
  * 特性：

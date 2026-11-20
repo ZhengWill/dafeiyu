@@ -1,5 +1,8 @@
 """把备份包推送到 GitHub 私有仓库。
 
+Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+本文件为原创实现，无第三方代码。
+
 走 GitHub Contents API 而不是 git push，理由：
   - 服务器不用装 git 凭据、不用配 SSH key
   - 单次 PUT 就能提交，不用处理 shallow clone

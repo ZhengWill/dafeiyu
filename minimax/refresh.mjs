@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-/**
+/** *
+ * Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+ * 本文件为原创实现（接口经抓包实测），无第三方代码。
+
  * MiniMax OAuth 凭证自动续期。
  *
  * 为什么需要：模型网关和账号接口都用 mmoat_ 前缀的 OAuth access token，

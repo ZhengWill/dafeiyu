@@ -1,5 +1,8 @@
 #!/usr/bin/env node
-/**
+/** *
+ * Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+ * 本文件为原创实现（接口经抓包实测），无第三方代码。
+
  * MiniMax 自动签到。
  *
  * 接口（实测 2026-11-20）：

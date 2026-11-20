@@ -289,9 +289,74 @@ SnowLuma / NapCat 这类项目走的是**协议模拟**，不是官方 API。腾
 
 ---
 
+## 🙏 致谢与第三方授权
+
+**本项目为原创实现，但站在了几个优秀项目的肩膀上。如实标注如下（详见 [CREDITS.md](./CREDITS.md)）：**
+
+### ⭐ workbuddy-openai-proxy —— 设计思路来源
+
+| | |
+|---|---|
+| 作者 | **yuan240324** |
+| 仓库 | https://github.com/yuan240324/workbuddy-openai-proxy |
+| 协议 | **MIT** |
+
+本项目**不含**它的源码，但两处有实质参考：
+
+1. **设计参考**：中转站的「多账号池 / 额度降级 / 失败分类（quota·rate·auth·network）」
+   这套思路来自该项目，`relay.mjs` 中相应部分是参照其实现重写的。
+2. **接口对接**：账号池与额度面板通过它的 `/console/api/*` 接口通信。
+
+> 想用 WorkBuddy 相关功能，**请自行安装该项目**（本项目不分发、不修改它）。
+
+### AstrBot —— 运行框架
+
+| | |
+|---|---|
+| 作者 | AstrBotDevs |
+| 仓库 | https://github.com/AstrBotDevs/AstrBot |
+| 协议 | **AGPL-3.0** |
+
+本项目作为它的**外部服务**运行，仅通过 OpenAI 兼容 HTTP 接口通信（进程隔离、无代码链接）。
+因此本项目采用 MIT **不违反** AGPL —— 两者是独立程序。
+
+> 若你修改 AstrBot 本体并对外提供服务，那部分改动需遵循 AGPL-3.0。
+
+### astrbot_plugin_meme_manager —— 踩坑经验的来源
+
+| | |
+|---|---|
+| 作者 | **anka** |
+| 仓库 | https://github.com/anka-afk/astrbot_plugin_meme_manager |
+| 协议 | **MIT** |
+
+`docs/避坑.md` 中第 11~13 条（页面 token 绑定、嵌入维度、并发僵尸任务）
+是在调试该插件时踩出来的，经验描述与它直接相关。本项目不分发其代码。
+
+### SnowLuma / NapCat —— QQ 协议端
+
+- [SnowLuma](https://github.com/motricseven7/snowluma)（当前使用，Docker 独立运行）
+- [NapCatQQ](https://github.com/NapNeko/NapCatQQ)（前代方案，已迁移）
+
+### 公开 API 规范
+
+OpenAI Chat Completions / Anthropic Messages —— 协议互转的格式依据（公开规范，非代码）。
+
+---
+
+**本仓库不含任何第三方代码副本，也未使用任何 npm 依赖或 CDN 资源。**
+如果你认为标注有不妥，请提 Issue，我立即调整。
+
+---
+
 ## 📄 License
 
-MIT —— 随便用，出事了别找我。
+本项目代码：**MIT** —— 随便用，出事了别找我。
+
+二次分发时请保留：
+
+- 本项目的 MIT 声明（Copyright (c) 2026 ZhengWill）
+- 若同时分发上述第三方项目，各自的版权声明
 
 ---
 

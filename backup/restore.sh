@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 # 大肥鱼还原脚本 —— 在全新机器上把服务恢复出来。
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 【第三方致谢】
+#   本脚本会还原 workbuddy-openai-proxy 的配置与账号池。
+#   workbuddy-openai-proxy — 作者 yuan240324，MIT License
+#   https://github.com/yuan240324/workbuddy-openai-proxy
+#   该项目需自行安装，本仓库不分发其代码。
+#   完整说明见 CREDITS.md
 #
 # 前提：新机器已装 Docker、Node 22、Python 3，且能访问 GitHub。
 #

@@ -227,6 +227,7 @@ dafeiyu/
 ├── relay/                  # 🛰️ 中转站（核心）
 │   ├── relay.mjs           #    主程序，零依赖单文件
 │   ├── relay.example.json  #    配置模板（复制成 relay.json 再改）
+│   ├── sync_relay_usage.py #    把网关状态压成插件可读的精简 JSON
 │   └── ui/index.html       #    管理面板单文件
 │
 ├── dashboard/              # 🖥️ 运维控制台
@@ -236,6 +237,7 @@ dafeiyu/
 ├── backup/                 # 🔐 备份与恢复
 │   ├── backup.sh           #    打包（代码/密钥分离）
 │   ├── push_backup.py      #    上传到 GitHub 私有仓库
+│   ├── backup-daily.sh     #    串联打包+推送，给 systemd timer 调用
 │   └── restore.sh          #    一键恢复
 │
 ├── minimax/                # 🔄 MiniMax 号池维护
@@ -245,7 +247,8 @@ dafeiyu/
 ├── plugins/                # 🔌 自研 AstrBot 插件
 │   ├── astrbot_plugin_yu_wake/    #    唤醒+连续对话+主动发言+防封控（主插件）
 │   ├── astrbot_plugin_auto_accept/#    自动通过好友/群邀请
-│   └── astrbot_plugin_poke_debug/ #    事件调试
+│   ├── astrbot_plugin_poke_debug/ #    事件调试
+│   └── meme_manager-patches/      #    对第三方插件改动的说明（不含源码）
 │
 ├── persona/                # 🐟 人设（提示词工程）
 │   ├── README.md           #    设计思路 + 完整提示词 + 调参建议

@@ -8,6 +8,10 @@
 | [**auto_accept**](./astrbot_plugin_auto_accept/) | 自动通过好友/群邀请并欢迎 | 小工具，84 行 |
 | [**poke_debug**](./astrbot_plugin_poke_debug/) | 事件调试（把所有入站事件打日志） | 排查用，36 行 |
 
+另有一份 [**meme_manager 改动说明**](./meme_manager-patches/) ——
+不是我们的插件，是对 [anka 的插件](https://github.com/anka-afk/astrbot_plugin_meme_manager)
+（MIT）做的本地修改记录。**只记改动，不含源码**。
+
 ---
 
 ## 为什么写这些

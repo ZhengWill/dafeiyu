@@ -234,11 +234,15 @@ dafeiyu/
 │   ├── server.mjs          #    服务端，含鉴权与反向代理
 │   └── index.html          #    前端单文件
 │
-├── backup/                 # 🔐 备份与恢复
+├── backup/                 # 🔐 备份、恢复、守护脚本
 │   ├── backup.sh           #    打包（代码/密钥分离）
 │   ├── push_backup.py      #    上传到 GitHub 私有仓库
 │   ├── backup-daily.sh     #    串联打包+推送，给 systemd timer 调用
-│   └── restore.sh          #    一键恢复
+│   ├── restore.sh          #    一键恢复
+│   ├── conn-guard.sh       #    连接守卫：WS 断了只重启 Bot，不动协议端
+│   ├── sync_usage.sh       #    把代理用量同步进容器
+│   ├── auto-accept.mjs     #    自动通过好友/邀请（独立进程版，历史方案）
+│   └── model-failover.mjs  #    自动降级 v6（中转站的前身，历史方案）
 │
 ├── minimax/                # 🔄 MiniMax 号池维护
 │   ├── refresh.mjs         #    OAuth 续期（每 3 小时）
@@ -254,6 +258,11 @@ dafeiyu/
 │   ├── README.md           #    设计思路 + 完整提示词 + 调参建议
 │   ├── dafeiyu.txt         #    可直接粘贴的纯文本版
 │   └── dafeiyu.json        #    AstrBot 导入格式
+│
+├── systemd/                # ⚙️ 所有单元文件（服务 + 定时任务）
+│   ├── README.md           #    安装、时间安排为什么这样排、排错
+│   ├── *.service           #    常驻服务
+│   └── *.timer             #    定时任务
 │
 └── docs/                   # 📚 详细文档
     ├── 部署.md              #    从零到跑通的完整步骤

@@ -1,0 +1,33 @@
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 部署说明：这些是 user 级 systemd 单元（放在 ~/.config/systemd/user/）。
+#   1. 按你的实际路径修改 ExecStart / WorkingDirectory
+#   2. systemctl --user daemon-reload
+#   3. systemctl --user enable --now <unit>
+#   4. loginctl enable-linger $USER   # 让用户服务在未登录时也运行
+#
+# 主要路径默认按 /root/... 写，部署到别处请整体替换。
+
+[Unit]
+Description=Dafeiyu Dashboard
+After=network.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/root/dashboard
+ExecStart=/usr/bin/node /root/dashboard/server.mjs
+Restart=on-failure
+RestartSec=5
+# 密钥用 Environment 传，不要写进代码。最少要设 DASH_PASS
+Environment=DASH_USER=admin
+Environment=DASH_PASS=REPLACE_ME
+# Environment=SL_PASSWORD=REPLACE_ME
+# Environment=SL_PUBLIC_HOST=你的服务器IP
+# Environment=SL_VNC_PASS=REPLACE_ME
+# Environment=RELAY_KEY=与 relay.json 的 apiKey 一致
+# Environment=WB_PROXY_KEY=如果用 WorkBuddy
+StandardOutput=append:/root/dashboard/access.log
+StandardError=append:/root/dashboard/error.log
+
+[Install]
+WantedBy=default.target

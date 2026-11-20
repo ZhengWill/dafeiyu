@@ -1,0 +1,22 @@
+# Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
+#
+# 部署说明：这些是 user 级 systemd 单元（放在 ~/.config/systemd/user/）。
+#   1. 按你的实际路径修改 ExecStart / WorkingDirectory
+#   2. systemctl --user daemon-reload
+#   3. systemctl --user enable --now <unit>
+#   4. loginctl enable-linger $USER   # 让用户服务在未登录时也运行
+#
+# 主要路径默认按 /root/... 写，部署到别处请整体替换。
+
+[Unit]
+Description=WorkBuddy OpenAI Proxy (第三方项目)
+After=network.target
+
+[Service]
+WorkingDirectory=/root/bot/workbuddy-openai-proxy
+ExecStart=/usr/bin/node /root/bot/workbuddy-openai-proxy/server.mjs
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

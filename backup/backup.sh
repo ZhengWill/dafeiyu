@@ -2,6 +2,14 @@
 # 大肥鱼部署备份
 # Copyright (c) 2026 ZhengWill — MIT License (见仓库根目录 LICENSE)
 #
+# 设计原则：
+#   1. 只备「重装时要手写」的东西 —— 配置、账号池、代码、systemd 单元。
+#      表情包图片和 temp 垃圾不备，可重新获取。
+#   2. 敏感与不敏感分开 —— secrets/ 里放密钥，code/ 里放源码，
+#      另生成 secrets/redacted/ 脱敏副本供公开仓库参考。
+#   3. 缺失要响声 —— 源文件路径写错时明确告警并返回非零退出码，
+#      不能让「路径打错但备份显示成功」这种情况混过去。
+#
 # 【第三方致谢】
 #   本脚本会备份 workbuddy-openai-proxy 的配置与账号池（不备份其源码）。
 #   workbuddy-openai-proxy — 作者 yuan240324，MIT License
@@ -9,15 +17,13 @@
 #   本脚本不包含、不改写该项目的任何代码。
 #   完整说明见 CREDITS.md
 #
-# 设计原则：
-#   1. 只备"重装时要手写"的东西 —— 配置、账号池、代码、systemd 单元。
-#      表情包图片（555M）和 temp 垃圾（802M）不备，可重新获取。
-#   2. 敏感与不敏感分开 —— secrets/ 与 code/ 两个目录，前者永不进公开仓库。
-#   3. tar 前先验证可读，避免备份出空包还以为成功。
-#
 # 用法：
-#   ./backup.sh              备份到 /root/backups/dafeiyu-<时间>.tar.gz
-#   ./backup.sh --keep 7     保留最近 7 份（默认 14）
+#   ./backup.sh              备份到 $BACKUP_ROOT（默认 /root/backups）
+#   ./backup.sh --keep 7     只保留最近 7 份
+#
+# 环境变量：
+#   BACKUP_ROOT   备份输出目录，默认 /root/backups
+
 set -uo pipefail
 
 STAMP=$(date +%Y%m%d-%H%M%S)
@@ -34,6 +40,10 @@ say() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 
 # ---------- 1. 代码与配置模板 ----------
 say "收集代码…"
+# 缺失计数器：最后汇总，有缺失就明确告警（防止路径写错却静默成功）
+MISSING=0
+MISSING_LIST=()
+
 copy_into() {
   local src="$1" dst="$2"
   if [[ -e "$src" ]]; then
@@ -41,16 +51,19 @@ copy_into() {
     cp -a "$src" "$WORK/$dst" 2>/dev/null && say "  ✓ $dst"
   else
     say "  ✗ 缺失: $src"
+    MISSING=$((MISSING + 1))
+    MISSING_LIST+=("$src")
   fi
 }
 
 # 中转站（代码部分，relay.json 归 secrets）
 copy_into /root/relay/relay.mjs            code/relay/relay.mjs
 copy_into /root/relay/ui                   code/relay/ui
-copy_into /root/relay/sync_relay_usage.py  code/relay/sync_relay_usage.py
+copy_into /root/sync_relay_usage.py       code/relay/sync_relay_usage.py
 copy_into /root/relay/minimax-checkin.mjs  code/relay/minimax-checkin.mjs
 copy_into /root/relay/minimax-refresh.mjs  code/relay/minimax-refresh.mjs
-copy_into /root/relay/seed.mjs             code/relay/seed.mjs
+# _seed.mjs 里硬编码了所有供应商 key，属于机密，放 secrets
+copy_into /root/relay/_seed.mjs             secrets/relay-seed.mjs
 
 # 控制台
 copy_into /root/dashboard/server.mjs       code/dashboard/server.mjs
@@ -77,6 +90,11 @@ copy_into /root/.config/systemd/user        code/systemd
 
 # TLS 中间件
 copy_into /root/astrbot-tls.mjs             code/astrbot-tls.mjs
+copy_into /root/backup-daily.sh             code/backup-daily.sh
+copy_into /root/sync_usage.sh               code/sync_usage.sh
+copy_into /root/bot/conn-guard.sh           code/bot-conn-guard.sh
+copy_into /root/bot/auto-accept.mjs         code/bot-auto-accept.mjs
+copy_into /root/bot/model-failover.mjs      code/bot-model-failover.mjs
 
 # 清理代码里的 __pycache__
 find "$WORK/code" -type d -name __pycache__ -prune -exec rm -rf {} + 2>/dev/null || true
@@ -156,21 +174,33 @@ os.makedirs(out_dir, exist_ok=True)
 SECRET_KEYS = re.compile(r'(key|token|secret|password|passwd|pwd|cookie|authorization)', re.I)
 PLACEHOLDER = "REPLACE_ME"
 
-def scrub(obj):
+def scrub(obj, in_secret=False):
+    """递归脱敏。
+
+    in_secret=True 表示当前子树挂在敏感键名下（如 key / token / password）。
+    这种情况下：
+      - 值为字符串 → 换占位符
+      - 值为列表（AstrBot 的 key 字段就是数组）→ 每个元素换占位符
+      - 值为数字 → 换占位符
+    以前只处理 str/int/float，导致 key: ["sk-xxx"] 这种数组形式被原样放过。
+    """
     if isinstance(obj, dict):
         out = {}
         for k, v in obj.items():
-            if SECRET_KEYS.search(k) and isinstance(v, (str, int, float)) and str(v).strip():
-                s = str(v)
-                # 保留结构但不泄露值
-                out[k] = PLACEHOLDER if len(s) < 200 else PLACEHOLDER
-            elif isinstance(v, (dict, list)):
-                out[k] = scrub(v)
-            else:
-                out[k] = v
+            secret = bool(SECRET_KEYS.search(k))
+            out[k] = scrub(v, in_secret=secret)
         return out
+
     if isinstance(obj, list):
-        return [scrub(x) for x in obj]
+        if in_secret:
+            # 敏感键下的数组：元素同样要脱敏，但保留数量
+            return [PLACEHOLDER if isinstance(x, (str, int, float)) and str(x).strip()
+                    else scrub(x, in_secret=True) for x in obj]
+        return [scrub(x, in_secret=False) for x in obj]
+
+    if in_secret and isinstance(obj, (str, int, float)) and str(obj).strip():
+        return PLACEHOLDER
+
     return obj
 
 targets = {
@@ -193,6 +223,47 @@ for src, dst in targets.items():
     json.dump(cleaned, open(os.path.join(out_dir, dst), 'w', encoding='utf-8'),
               ensure_ascii=False, indent=2)
     print(f'  ✓ {dst}')
+
+# ---- 非 JSON 文件：按内容正则脱敏（_seed.mjs 之类硬编码 key 的脚本）----
+JS_PATTERNS = [
+    (re.compile(r"('sk-[A-Za-z0-9_\-]{10,}')"), "'REPLACE_ME_KEY'"),
+    (re.compile(r'("sk-[A-Za-z0-9_\-]{10,}")'), '"REPLACE_ME_KEY"'),
+    (re.compile(r"('(?:wbproxy|relay)-local-[^']*')"), "'REPLACE_ME'"),
+    (re.compile(r'("(?:wbproxy|relay)-local-[^"]*")'), '"REPLACE_ME"'),
+    (re.compile(r"('cfut_[A-Za-z0-9]+')"), "'REPLACE_ME_CF_TOKEN'"),
+    (re.compile(r"('ghp_[A-Za-z0-9]+')"), "'REPLACE_ME_GH_TOKEN'"),
+    (re.compile(r"('mmo[ar]t_[A-Za-z0-9_\-]+')"), "'REPLACE_ME_OAUTH'"),
+    (re.compile(r"('fisher[0-9A-Za-z#]*')"), "'REPLACE_ME_TOKEN'"),
+]
+TEXT_TARGETS = {'relay-seed.mjs': 'relay-seed.example.mjs'}
+for src, dst in TEXT_TARGETS.items():
+    p = os.path.join(work, 'secrets', src)
+    if not os.path.exists(p):
+        continue
+    try:
+        txt = open(p, encoding='utf-8').read()
+    except Exception as e:
+        print(f'  ! 跳过 {src}: {e}')
+        continue
+    for pat, rep in JS_PATTERNS:
+        txt = pat.sub(rep, txt)
+    open(os.path.join(out_dir, dst), 'w', encoding='utf-8').write(txt)
+    print(f'  ✓ {dst}')
+
+# ---- 空包自检：脱敏副本里不该再出现真实 key 形态 ----
+LEAK = re.compile(r'sk-[A-Za-z0-9_\-]{20,}|ghp_[A-Za-z0-9]{20,}|cfut_[A-Za-z0-9]{10,}')
+leaks = []
+for fn in os.listdir(out_dir):
+    fp = os.path.join(out_dir, fn)
+    try:
+        c = open(fp, encoding='utf-8').read()
+    except Exception:
+        continue
+    if LEAK.search(c):
+        leaks.append(fn)
+if leaks:
+    print(f'  ✗ 脱敏后仍有疑似密钥: {leaks}')
+    sys.exit(2)
 PYEOF
 
 # ---------- 5. 打包 ----------
@@ -213,6 +284,19 @@ say "包含 $CNT 个文件"
 # 生成 SHA256 便于校验
 sha256sum "$OUT" | awk '{print $1}' > "$OUT.sha256"
 
+# ---------- 5.5 缺失汇总 ----------
+if [[ $MISSING -gt 0 ]]; then
+  say "⚠️  有 $MISSING 个源文件缺失（备份仍已生成，但请检查路径）："
+  for m in "${MISSING_LIST[@]}"; do
+    say "      - $m"
+  done
+  # 写进 manifest 旁边，便于事后排查
+  printf '%s\n' "${MISSING_LIST[@]}" > "$ROOT_DIR/last-missing.txt"
+else
+  rm -f "$ROOT_DIR/last-missing.txt"
+  say "✓ 所有源文件均已收集"
+fi
+
 rm -rf "$WORK"
 
 # ---------- 6. 轮转 ----------
@@ -222,4 +306,8 @@ ls -1t "$ROOT_DIR"/dafeiyu-*.tar.gz 2>/dev/null | tail -n +$((KEEP + 1)) | while
   say "  删除 $(basename "$old")"
 done
 
+if [[ $MISSING -gt 0 ]]; then
+  say "完成，但有 $MISSING 个文件缺失，退出码 2"
+  exit 2
+fi
 say "全部完成。"
